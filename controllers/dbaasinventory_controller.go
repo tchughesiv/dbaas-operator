@@ -25,6 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 )
@@ -32,7 +34,6 @@ import (
 // DBaaSInventoryReconciler reconciles a DBaaSInventory object
 type DBaaSInventoryReconciler struct {
 	*DBaaSReconciler
-	// TenantCtrl controller.Controller
 }
 
 //+kubebuilder:rbac:groups=dbaas.redhat.com,resources=*,verbs=get;list;watch;create;update;patch;delete
@@ -49,96 +50,93 @@ type DBaaSInventoryReconciler struct {
 func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx, "DBaaS Inventory", req.NamespacedName)
 
-	// only reconcile an Inventory if it's installed to a Tenant object's inventoryNamespace
-	if contains(TenantInventoryNS, req.Namespace) {
-		var inventory v1alpha1.DBaaSInventory
-		if err := r.Get(ctx, req.NamespacedName, &inventory); err != nil {
-			if errors.IsNotFound(err) {
-				// CR deleted since request queued, child objects getting GC'd, no requeue
-				logger.V(1).Info("DBaaS Inventory resource not found, has been deleted")
-				return ctrl.Result{}, nil
-			}
-			logger.Error(err, "Error fetching DBaaS Inventory for reconcile")
-			return ctrl.Result{}, err
+	var inventory v1alpha1.DBaaSInventory
+	if err := r.Get(ctx, req.NamespacedName, &inventory); err != nil {
+		if errors.IsNotFound(err) {
+			// CR deleted since request queued, child objects getting GC'd, no requeue
+			logger.V(1).Info("DBaaS Inventory resource not found, has been deleted")
+			return ctrl.Result{}, nil
 		}
+		logger.Error(err, "Error fetching DBaaS Inventory for reconcile")
+		return ctrl.Result{}, err
+	}
 
-		//
-		// Inventory RBAC
-		//
-		role, rolebinding := inventoryRbacObjs(inventory)
-		var roleObj rbacv1.Role
-		if exists, err := r.createRbacObj(&role, &roleObj, &inventory, ctx); err != nil {
-			return ctrl.Result{}, err
-		} else if exists {
-			if !reflect.DeepEqual(role.Rules, roleObj.Rules) {
-				roleObj.Rules = role.Rules
-				if err := r.updateObject(&roleObj, ctx); err != nil {
-					logger.Error(err, "Error updating resource", roleObj.Name, roleObj.Namespace)
-					return ctrl.Result{}, err
-				}
-				logger.V(1).Info(roleObj.Kind+" resource updated", roleObj.Name, roleObj.Namespace)
-			}
-		}
-		var roleBindingObj rbacv1.RoleBinding
-		if exists, err := r.createRbacObj(&rolebinding, &roleBindingObj, &inventory, ctx); err != nil {
-			return ctrl.Result{}, err
-		} else if exists {
-			if !reflect.DeepEqual(rolebinding.RoleRef, roleBindingObj.RoleRef) ||
-				!reflect.DeepEqual(rolebinding.Subjects, roleBindingObj.Subjects) {
-				roleBindingObj.RoleRef = rolebinding.RoleRef
-				roleBindingObj.Subjects = rolebinding.Subjects
-				if err := r.updateObject(&roleBindingObj, ctx); err != nil {
-					logger.Error(err, "Error updating resource", roleBindingObj.Name, roleBindingObj.Namespace)
-					return ctrl.Result{}, err
-				}
-				logger.V(1).Info(roleBindingObj.Kind+" resource updated", roleBindingObj.Name, roleBindingObj.Namespace)
-			}
-		}
-
-		//
-		// Provider Inventory
-		//
-		provider, err := r.getDBaaSProvider(inventory.Spec.ProviderRef.Name, ctx)
-		if err != nil {
-			if errors.IsNotFound(err) {
-				logger.Error(err, "Requested DBaaS Provider is not configured in this environment", "DBaaS Provider", inventory.Spec.ProviderRef)
+	//
+	// Inventory RBAC
+	//
+	role, rolebinding := inventoryRbacObjs(inventory)
+	var roleObj rbacv1.Role
+	if exists, err := r.createRbacObj(&role, &roleObj, &inventory, ctx); err != nil {
+		return ctrl.Result{}, err
+	} else if exists {
+		if !reflect.DeepEqual(role.Rules, roleObj.Rules) {
+			roleObj.Rules = role.Rules
+			if err := r.updateObject(&roleObj, ctx); err != nil {
+				logger.Error(err, "Error updating resource", roleObj.Name, roleObj.Namespace)
 				return ctrl.Result{}, err
 			}
-			logger.Error(err, "Error reading configured DBaaS Provider", "DBaaS Provider", inventory.Spec.ProviderRef)
-			return ctrl.Result{}, err
+			logger.V(1).Info(roleObj.Kind+" resource updated", roleObj.Name, roleObj.Namespace)
 		}
-		logger.V(1).Info("Found DBaaS Provider", "DBaaS Provider", inventory.Spec.ProviderRef)
-
-		providerInventory := r.createProviderObject(&inventory, provider.Spec.InventoryKind)
-		if result, err := r.reconcileProviderObject(providerInventory, r.providerObjectMutateFn(&inventory, providerInventory, inventory.Spec.DeepCopy()), ctx); err != nil {
-			if errors.IsConflict(err) {
-				logger.V(1).Info("Provider Inventory modified, retry syncing spec")
-				return ctrl.Result{Requeue: true}, nil
+	}
+	var roleBindingObj rbacv1.RoleBinding
+	if exists, err := r.createRbacObj(&rolebinding, &roleBindingObj, &inventory, ctx); err != nil {
+		return ctrl.Result{}, err
+	} else if exists {
+		if !reflect.DeepEqual(rolebinding.RoleRef, roleBindingObj.RoleRef) ||
+			!reflect.DeepEqual(rolebinding.Subjects, roleBindingObj.Subjects) {
+			roleBindingObj.RoleRef = rolebinding.RoleRef
+			roleBindingObj.Subjects = rolebinding.Subjects
+			if err := r.updateObject(&roleBindingObj, ctx); err != nil {
+				logger.Error(err, "Error updating resource", roleBindingObj.Name, roleBindingObj.Namespace)
+				return ctrl.Result{}, err
 			}
-			logger.Error(err, "Error reconciling the Provider Inventory resource")
-			return ctrl.Result{}, err
-		} else {
-			logger.V(1).Info("Provider Inventory resource reconciled", "result", result)
+			logger.V(1).Info(roleBindingObj.Kind+" resource updated", roleBindingObj.Name, roleBindingObj.Namespace)
 		}
+	}
 
-		var DBaaSProviderInventory v1alpha1.DBaaSProviderInventory
-		if err := r.parseProviderObject(&DBaaSProviderInventory, providerInventory); err != nil {
-			logger.Error(err, "Error parsing the Provider Inventory resource")
+	//
+	// Provider Inventory
+	//
+	provider, err := r.getDBaaSProvider(inventory.Spec.ProviderRef.Name, ctx)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logger.Error(err, "Requested DBaaS Provider is not configured in this environment", "DBaaS Provider", inventory.Spec.ProviderRef)
 			return ctrl.Result{}, err
 		}
-		if err := r.reconcileDBaaSObjectStatus(&inventory, ctx, func() error {
-			DBaaSProviderInventory.Status.DeepCopyInto(&inventory.Status)
-			return nil
-		}); err != nil {
-			if errors.IsConflict(err) {
-				logger.V(1).Info("DBaaS Inventory modified, retry syncing status")
-				return ctrl.Result{Requeue: true}, nil
-			}
-			logger.Error(err, "Error updating the DBaaS Inventory status")
-			return ctrl.Result{}, err
-		} else {
-			logger.V(1).Info("DBaaS Inventory status updated")
+		logger.Error(err, "Error reading configured DBaaS Provider", "DBaaS Provider", inventory.Spec.ProviderRef)
+		return ctrl.Result{}, err
+	}
+	logger.V(1).Info("Found DBaaS Provider", "DBaaS Provider", inventory.Spec.ProviderRef)
+
+	providerInventory := r.createProviderObject(&inventory, provider.Spec.InventoryKind)
+	if result, err := r.reconcileProviderObject(providerInventory, r.providerObjectMutateFn(&inventory, providerInventory, inventory.Spec.DeepCopy()), ctx); err != nil {
+		if errors.IsConflict(err) {
+			logger.V(1).Info("Provider Inventory modified, retry syncing spec")
+			return ctrl.Result{Requeue: true}, nil
 		}
+		logger.Error(err, "Error reconciling the Provider Inventory resource")
+		return ctrl.Result{}, err
+	} else {
+		logger.V(1).Info("Provider Inventory resource reconciled", "result", result)
+	}
+
+	var DBaaSProviderInventory v1alpha1.DBaaSProviderInventory
+	if err := r.parseProviderObject(&DBaaSProviderInventory, providerInventory); err != nil {
+		logger.Error(err, "Error parsing the Provider Inventory resource")
+		return ctrl.Result{}, err
+	}
+	if err := r.reconcileDBaaSObjectStatus(&inventory, ctx, func() error {
+		DBaaSProviderInventory.Status.DeepCopyInto(&inventory.Status)
+		return nil
+	}); err != nil {
+		if errors.IsConflict(err) {
+			logger.V(1).Info("DBaaS Inventory modified, retry syncing status")
+			return ctrl.Result{Requeue: true}, nil
+		}
+		logger.Error(err, "Error updating the DBaaS Inventory status")
+		return ctrl.Result{}, err
+	} else {
+		logger.V(1).Info("DBaaS Inventory status updated")
 	}
 
 	return ctrl.Result{}, nil
@@ -147,9 +145,26 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSInventoryReconciler) SetupWithManager(mgr ctrl.Manager) (controller.Controller, error) {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.DBaaSInventory{}).
+		//		For(&v1alpha1.DBaaSInventory{}).
+		//		WithEventFilter(inventoryPredicate).
 		Build(r)
-	// ?? should we add a predicate to only reconcile inventories in a TenantNS ? can we?
+}
+
+// only reconcile an Inventory if it's installed to a Tenant object's inventoryNamespace
+var inventoryPredicate = predicate.Funcs{
+	CreateFunc: func(e event.CreateEvent) bool {
+		return contains(TenantInventoryNS, e.Object.GetNamespace())
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		return contains(TenantInventoryNS, e.Object.GetNamespace())
+	},
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		return contains(TenantInventoryNS, e.ObjectOld.GetNamespace()) ||
+			contains(TenantInventoryNS, e.ObjectNew.GetNamespace())
+	},
+	GenericFunc: func(e event.GenericEvent) bool {
+		return contains(TenantInventoryNS, e.Object.GetNamespace())
+	},
 }
 
 // gets rbac objects for an inventory's users

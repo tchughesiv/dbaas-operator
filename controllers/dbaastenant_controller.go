@@ -40,9 +40,8 @@ import (
 )
 
 var (
-	TenantList        v1alpha1.DBaaSTenantList
-	TenantNames       []string
-	TenantInventoryNS []string
+	TenantList                     v1alpha1.DBaaSTenantList
+	TenantNames, TenantInventoryNS []string
 )
 
 // DBaaSTenantReconciler reconciles a DBaaSTenant object
@@ -78,86 +77,107 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return result, err
 	}
 
-	var tenant v1alpha1.DBaaSTenant
-	if err := r.Get(ctx, req.NamespacedName, &tenant); err != nil {
-		if errors.IsNotFound(err) {
-			// CR deleted since request queued, child objects getting GC'd, no requeue
-			return ctrl.Result{}, nil
-		}
-		logger.Error(err, "Error fetching DBaaS Tenant for reconcile")
-		return ctrl.Result{}, err
-	}
-
-	// Get list of DBaaSInventories from tenant namespace
-	var inventoryList v1alpha1.DBaaSInventoryList
-	if err := r.List(ctx, &inventoryList, &client.ListOptions{Namespace: tenant.Spec.InventoryNamespace}); err != nil {
-		logger.Error(err, "Error fetching DBaaS Inventory List for reconcile")
-		return ctrl.Result{}, err
-	}
-
-	//
-	// Tenant RBAC
-	//
-	inventoryAuthz := getAllAuthzFromInventoryList(inventoryList, tenant)
-	clusterRole, clusterRolebinding := tenantRbacObjs(tenant, inventoryAuthz)
-	var clusterRoleObj rbacv1.ClusterRole
-	if exists, err := r.createRbacObj(&clusterRole, &clusterRoleObj, &tenant, ctx); err != nil {
-		return ctrl.Result{}, err
-	} else if exists {
-		if !reflect.DeepEqual(clusterRole.Rules, clusterRoleObj.Rules) {
-			clusterRoleObj.Rules = clusterRole.Rules
-			if err := r.updateObject(&clusterRoleObj, ctx); err != nil {
-				logger.Error(err, "Error updating resource", "Name", clusterRoleObj.Name)
-				return ctrl.Result{}, err
+	// all tenants that manage a given namespace
+	var tenants []v1alpha1.DBaaSTenant
+	if req.Namespace == "" {
+		// tenant, cluster-scoped object, has triggered the reconcile
+		var tenant v1alpha1.DBaaSTenant
+		if err := r.Get(ctx, req.NamespacedName, &tenant); err != nil {
+			if errors.IsNotFound(err) {
+				// CR deleted since request queued, child objects getting GC'd, no requeue
+				return ctrl.Result{}, nil
 			}
-			logger.Info(clusterRoleObj.Kind+" resource updated", "Name", clusterRoleObj.Name)
+			logger.Error(err, "Error fetching DBaaS Tenant for reconcile")
+			return ctrl.Result{}, err
 		}
-	}
-	var clusterRoleBindingObj rbacv1.ClusterRoleBinding
-	if exists, err := r.createRbacObj(&clusterRolebinding, &clusterRoleBindingObj, &tenant, ctx); err != nil {
-		return ctrl.Result{}, err
-	} else if exists {
-		if !reflect.DeepEqual(clusterRolebinding.RoleRef, clusterRoleBindingObj.RoleRef) ||
-			!reflect.DeepEqual(clusterRolebinding.Subjects, clusterRoleBindingObj.Subjects) {
-			clusterRoleBindingObj.RoleRef = clusterRolebinding.RoleRef
-			clusterRoleBindingObj.Subjects = clusterRolebinding.Subjects
-			if err := r.updateObject(&clusterRoleBindingObj, ctx); err != nil {
-				logger.Error(err, "Error updating resource", "Name", clusterRoleBindingObj.Name)
-				return ctrl.Result{}, err
+		tenants = append(tenants, tenant)
+	} else {
+		// inventory, namespaced object, has triggered the reconcile
+		for _, tenant := range TenantList.Items {
+			if tenant.Spec.InventoryNamespace == req.Namespace {
+				tenants = append(tenants, tenant)
 			}
-			logger.Info(clusterRoleBindingObj.Kind+" resource updated", "Name", clusterRoleBindingObj.Name)
 		}
 	}
 
-	// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
-	for _, inventory := range inventoryList.Items {
-		// should we return anything on err for these reconciles?
-		// _, err = r.InventoryCtrl.Reconcile(ctx, invReq)
-		r.InventoryCtrl.Reconcile(ctx, reconcile.Request{
-			NamespacedName: types.NamespacedName{Name: inventory.Name, Namespace: inventory.Namespace},
-		})
+	if len(tenants) > 0 {
+		// Get list of DBaaSInventories from tenant namespace
+		var inventoryList v1alpha1.DBaaSInventoryList
+		if err := r.List(ctx, &inventoryList, &client.ListOptions{Namespace: tenants[0].Spec.InventoryNamespace}); err != nil {
+			logger.Error(err, "Error fetching DBaaS Inventory List for reconcile")
+			return ctrl.Result{}, err
+		}
+		for _, tenant := range tenants {
+			//
+			// Tenant RBAC
+			//
+			inventoryAuthz := getAllAuthzFromInventoryList(inventoryList, tenant)
+			clusterRole, clusterRolebinding := tenantRbacObjs(tenant, inventoryAuthz)
+			var clusterRoleObj rbacv1.ClusterRole
+			if exists, err := r.createRbacObj(&clusterRole, &clusterRoleObj, &tenant, ctx); err != nil {
+				return ctrl.Result{}, err
+			} else if exists {
+				if !reflect.DeepEqual(clusterRole.Rules, clusterRoleObj.Rules) {
+					clusterRoleObj.Rules = clusterRole.Rules
+					if err := r.updateObject(&clusterRoleObj, ctx); err != nil {
+						logger.Error(err, "Error updating resource", "Name", clusterRoleObj.Name)
+						return ctrl.Result{}, err
+					}
+					logger.Info(clusterRoleObj.Kind+" resource updated", "Name", clusterRoleObj.Name)
+				}
+			}
+			var clusterRoleBindingObj rbacv1.ClusterRoleBinding
+			if exists, err := r.createRbacObj(&clusterRolebinding, &clusterRoleBindingObj, &tenant, ctx); err != nil {
+				return ctrl.Result{}, err
+			} else if exists {
+				if !reflect.DeepEqual(clusterRolebinding.RoleRef, clusterRoleBindingObj.RoleRef) ||
+					!reflect.DeepEqual(clusterRolebinding.Subjects, clusterRoleBindingObj.Subjects) {
+					clusterRoleBindingObj.RoleRef = clusterRolebinding.RoleRef
+					clusterRoleBindingObj.Subjects = clusterRolebinding.Subjects
+					if err := r.updateObject(&clusterRoleBindingObj, ctx); err != nil {
+						logger.Error(err, "Error updating resource", "Name", clusterRoleBindingObj.Name)
+						return ctrl.Result{}, err
+					}
+					logger.Info(clusterRoleBindingObj.Kind+" resource updated", "Name", clusterRoleBindingObj.Name)
+				}
+			}
+		}
+
+		// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
+		for _, inventory := range inventoryList.Items {
+			// should we return anything on err for these reconciles?
+			// _, err = r.InventoryCtrl.Reconcile(ctx, invReq)
+			r.InventoryCtrl.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{Name: inventory.Name, Namespace: inventory.Namespace},
+			})
+		}
 	}
 
-	// re-run reconcile every minute to ensure tenant rbac is accurate.
-	//    this forces a fresh inventory list so we can be sure all proper devs have tenant access
-	//    ?? can we, instead, force this tenant reconciliation whenever an inventory in a tenant's namespace is modified ??
-	return ctrl.Result{RequeueAfter: time.Duration(60) * time.Second}, nil
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// watch all tenants in the cluster
 	c, err := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.DBaaSTenant{}).
 		Build(r)
 	if err != nil {
 		return err
 	}
+	// watch inventories if they are installed to a Tenant object's inventoryNamespace
+	if err = c.Watch(
+		&source.Kind{Type: &v1alpha1.DBaaSInventory{}},
+		&handler.EnqueueRequestForOwner{},
+		inventoryPredicate,
+	); err != nil {
+		return err
+	}
+	// watch a deployment if it is owned by a csv and resides in the operator's install namespace
 	csvType := &unstructured.Unstructured{}
 	csvType.SetGroupVersionKind(schema.GroupVersionKind{
 		Group: "operators.coreos.com",
 		Kind:  "ClusterServiceVersion",
-		// is version used? necessary here?
-		Version: "v1alpha1",
 	})
 	if err = c.Watch(
 		&source.Kind{Type: &appsv1.Deployment{}},
@@ -169,10 +189,11 @@ func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return nil
 }
 
-func (r *DBaaSTenantReconciler) ignoreOtherDeployments() predicate.Predicate {
+// only reconcile deployments that reside in the operator's install namespace
+func (r *DBaaSReconciler) ignoreOtherDeployments() predicate.Predicate {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			return r.evaluatePredicateObject(e.Object)
+			return e.Object.GetNamespace() == r.InstallNamespace
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			return false
@@ -184,10 +205,6 @@ func (r *DBaaSTenantReconciler) ignoreOtherDeployments() predicate.Predicate {
 			return false
 		},
 	}
-}
-
-func (r *DBaaSTenantReconciler) evaluatePredicateObject(obj client.Object) bool {
-	return obj.GetNamespace() == r.InstallNamespace
 }
 
 // create a default Tenant if one doesn't exist
