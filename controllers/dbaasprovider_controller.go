@@ -81,16 +81,16 @@ func (r *DBaaSProviderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 var filterEventPredicate = predicate.Funcs{
-	CreateFunc: func(createEvent event.CreateEvent) bool {
+	CreateFunc: func(e event.CreateEvent) bool {
 		return true
 	},
-	UpdateFunc: func(updateEvent event.UpdateEvent) bool {
-		return updateEvent.ObjectNew.GetGeneration() != updateEvent.ObjectOld.GetGeneration()
-	},
-	DeleteFunc: func(deleteEvent event.DeleteEvent) bool {
+	DeleteFunc: func(e event.DeleteEvent) bool {
 		return false
 	},
-	GenericFunc: func(genericEvent event.GenericEvent) bool {
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		return e.ObjectNew.GetGeneration() != e.ObjectOld.GetGeneration()
+	},
+	GenericFunc: func(e event.GenericEvent) bool {
 		return false
 	},
 }

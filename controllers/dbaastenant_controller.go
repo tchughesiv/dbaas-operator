@@ -40,9 +40,8 @@ import (
 )
 
 var (
-	TenantList        v1alpha1.DBaaSTenantList
-	TenantNames       []string
-	TenantInventoryNS []string
+	TenantList                     v1alpha1.DBaaSTenantList
+	TenantNames, TenantInventoryNS []string
 )
 
 // DBaaSTenantReconciler reconciles a DBaaSTenant object
@@ -146,18 +145,18 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// watch all tenants in the cluster
 	c, err := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.DBaaSTenant{}).
 		Build(r)
 	if err != nil {
 		return err
 	}
+	// watch a deployment if it is owned by a csv and resides in the operator's install namespace
 	csvType := &unstructured.Unstructured{}
 	csvType.SetGroupVersionKind(schema.GroupVersionKind{
 		Group: "operators.coreos.com",
 		Kind:  "ClusterServiceVersion",
-		// is version used? necessary here?
-		Version: "v1alpha1",
 	})
 	if err = c.Watch(
 		&source.Kind{Type: &appsv1.Deployment{}},
@@ -169,10 +168,11 @@ func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return nil
 }
 
-func (r *DBaaSTenantReconciler) ignoreOtherDeployments() predicate.Predicate {
+// only reconcile deployments that reside in the operator's install namespace
+func (r *DBaaSReconciler) ignoreOtherDeployments() predicate.Predicate {
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
-			return r.evaluatePredicateObject(e.Object)
+			return e.Object.GetNamespace() == r.InstallNamespace
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			return false
@@ -184,10 +184,6 @@ func (r *DBaaSTenantReconciler) ignoreOtherDeployments() predicate.Predicate {
 			return false
 		},
 	}
-}
-
-func (r *DBaaSTenantReconciler) evaluatePredicateObject(obj client.Object) bool {
-	return obj.GetNamespace() == r.InstallNamespace
 }
 
 // create a default Tenant if one doesn't exist
