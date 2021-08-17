@@ -50,6 +50,14 @@ type DBaaSInventoryReconciler struct {
 func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx, "DBaaS Inventory", req.NamespacedName)
 
+	// ????? do here as well so we can switch tenant trigger to only occur with inventory mods???
+	// update global tenant vars
+	if err := r.getTenants(ctx); err != nil {
+		logger.Error(err, "Error fetching DBaaS Tenant List for reconcile")
+		return ctrl.Result{}, err
+	}
+	// ?????
+
 	var inventory v1alpha1.DBaaSInventory
 	if err := r.Get(ctx, req.NamespacedName, &inventory); err != nil {
 		if errors.IsNotFound(err) {

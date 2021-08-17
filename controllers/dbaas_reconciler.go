@@ -147,6 +147,26 @@ func (r *DBaaSReconciler) createRbacObj(newObj, getObj, owner client.Object, ctx
 	return false, nil
 }
 
+// get list of DBaaSTenants from cluster, populate global vars
+func (r *DBaaSReconciler) getTenants(ctx context.Context) error {
+	TenantList = v1alpha1.DBaaSTenantList{}
+	if err := r.List(ctx, &TenantList); err != nil {
+		return err
+	}
+	getTenantNamesandNS()
+	return nil
+}
+
+// get latest Tenant names and inventoryNamespaces, add to global slice vars
+func getTenantNamesandNS() {
+	TenantNames = []string{}
+	TenantInventoryNS = []string{}
+	for _, tenant := range TenantList.Items {
+		TenantNames = append(TenantNames, tenant.Name)
+		TenantInventoryNS = append(TenantInventoryNS, tenant.Spec.InventoryNamespace)
+	}
+}
+
 // GetInstallNamespace returns the operator's install Namespace
 func GetInstallNamespace() (string, error) {
 	ns, found := os.LookupEnv(InstallNamespaceEnvVar)

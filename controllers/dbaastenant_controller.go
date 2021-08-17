@@ -64,13 +64,11 @@ type DBaaSTenantReconciler struct {
 func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx, "DBaaS Tenant", req.NamespacedName)
 
-	// Get list of DBaaSTenants from cluster
-	TenantList = v1alpha1.DBaaSTenantList{}
-	if err := r.List(ctx, &TenantList); err != nil {
+	// update global tenant vars
+	if err := r.getTenants(ctx); err != nil {
 		logger.Error(err, "Error fetching DBaaS Tenant List for reconcile")
 		return ctrl.Result{}, err
 	}
-	getTenantNamesandNS()
 
 	// create default tenant if none exists
 	if result, err := r.createDefaultTenant(ctx); err != nil {
@@ -289,14 +287,4 @@ func getAllAuthzFromInventoryList(inventoryList v1alpha1.DBaaSInventoryList, ten
 		inventoryAuthz.Groups = append(inventoryAuthz.Groups, tenant.Spec.Authz.Developer.Groups...)
 	}
 	return inventoryAuthz
-}
-
-// get latest Tenant names and inventoryNamespaces, add to global slice vars
-func getTenantNamesandNS() {
-	TenantNames = []string{}
-	TenantInventoryNS = []string{}
-	for _, tenant := range TenantList.Items {
-		TenantNames = append(TenantNames, tenant.Name)
-		TenantInventoryNS = append(TenantInventoryNS, tenant.Spec.InventoryNamespace)
-	}
 }
