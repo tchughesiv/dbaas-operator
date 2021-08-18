@@ -52,7 +52,8 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	// ????? do here as well so we can switch tenant trigger to only occur with inventory mods???
 	// update global tenant vars
-	if err := r.getTenants(ctx); err != nil {
+	tenantList, err := r.getTenants(ctx)
+	if err != nil {
 		logger.Error(err, "Error fetching DBaaS Tenant List for reconcile")
 		return ctrl.Result{}, err
 	}
@@ -72,7 +73,7 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	//
 	// Inventory RBAC
 	//
-	role, rolebinding := inventoryRbacObjs(inventory)
+	role, rolebinding := inventoryRbacObjs(inventory, tenantList)
 	var roleObj rbacv1.Role
 	if exists, err := r.createRbacObj(&role, &roleObj, &inventory, ctx); err != nil {
 		return ctrl.Result{}, err
@@ -176,7 +177,7 @@ var inventoryPredicate = predicate.Funcs{
 }
 
 // gets rbac objects for an inventory's users
-func inventoryRbacObjs(inventory v1alpha1.DBaaSInventory) (rbacv1.Role, rbacv1.RoleBinding) {
+func inventoryRbacObjs(inventory v1alpha1.DBaaSInventory, tenantList v1alpha1.DBaaSTenantList) (rbacv1.Role, rbacv1.RoleBinding) {
 	role := rbacv1.Role{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "dbaas-" + inventory.Name + "-inventory-viewer",
@@ -215,7 +216,7 @@ func inventoryRbacObjs(inventory v1alpha1.DBaaSInventory) (rbacv1.Role, rbacv1.R
 	// if inventory.Spec.Authz is nil, use tenant defaults for view access to the Inventory object
 	var users, groups []string
 	if inventory.Spec.Authz.Users == nil && inventory.Spec.Authz.Groups == nil {
-		for _, tenant := range TenantList.Items {
+		for _, tenant := range tenantList.Items {
 			if tenant.Spec.InventoryNamespace == inventory.Namespace {
 				users = append(users, tenant.Spec.Authz.Developer.Users...)
 				groups = append(groups, tenant.Spec.Authz.Developer.Groups...)

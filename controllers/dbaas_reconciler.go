@@ -148,20 +148,20 @@ func (r *DBaaSReconciler) createRbacObj(newObj, getObj, owner client.Object, ctx
 }
 
 // get list of DBaaSTenants from cluster, populate global vars
-func (r *DBaaSReconciler) getTenants(ctx context.Context) error {
-	TenantList = v1alpha1.DBaaSTenantList{}
-	if err := r.List(ctx, &TenantList); err != nil {
-		return err
+func (r *DBaaSReconciler) getTenants(ctx context.Context) (v1alpha1.DBaaSTenantList, error) {
+	tenantList := v1alpha1.DBaaSTenantList{}
+	if err := r.List(ctx, &tenantList); err != nil {
+		return tenantList, err
 	}
-	getTenantNamesandNS()
-	return nil
+	getTenantNamesandNS(tenantList)
+	return tenantList, nil
 }
 
 // get latest Tenant names and inventoryNamespaces, add to global slice vars
-func getTenantNamesandNS() {
+func getTenantNamesandNS(tenantList v1alpha1.DBaaSTenantList) {
 	TenantNames = []string{}
 	TenantInventoryNS = []string{}
-	for _, tenant := range TenantList.Items {
+	for _, tenant := range tenantList.Items {
 		TenantNames = append(TenantNames, tenant.Name)
 		TenantInventoryNS = append(TenantInventoryNS, tenant.Spec.InventoryNamespace)
 	}

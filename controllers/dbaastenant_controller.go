@@ -40,7 +40,6 @@ import (
 )
 
 var (
-	TenantList                     v1alpha1.DBaaSTenantList
 	TenantNames, TenantInventoryNS []string
 )
 
@@ -65,7 +64,8 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	logger := ctrl.LoggerFrom(ctx, "DBaaS Tenant", req.NamespacedName)
 
 	// update global tenant vars
-	if err := r.getTenants(ctx); err != nil {
+	tenantList, err := r.getTenants(ctx)
+	if err != nil {
 		logger.Error(err, "Error fetching DBaaS Tenant List for reconcile")
 		return ctrl.Result{}, err
 	}
@@ -75,64 +75,66 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return result, err
 	}
 
-	var tenant v1alpha1.DBaaSTenant
-	if err := r.Get(ctx, req.NamespacedName, &tenant); err != nil {
-		if errors.IsNotFound(err) {
-			// CR deleted since request queued, child objects getting GC'd, no requeue
-			return ctrl.Result{}, nil
-		}
-		logger.Error(err, "Error fetching DBaaS Tenant for reconcile")
-		return ctrl.Result{}, err
-	}
-
-	// Get list of DBaaSInventories from tenant namespace
-	var inventoryList v1alpha1.DBaaSInventoryList
-	if err := r.List(ctx, &inventoryList, &client.ListOptions{Namespace: tenant.Spec.InventoryNamespace}); err != nil {
-		logger.Error(err, "Error fetching DBaaS Inventory List for reconcile")
-		return ctrl.Result{}, err
-	}
-
-	//
-	// Tenant RBAC
-	//
-	inventoryAuthz := getAllAuthzFromInventoryList(inventoryList, tenant)
-	clusterRole, clusterRolebinding := tenantRbacObjs(tenant, inventoryAuthz)
-	var clusterRoleObj rbacv1.ClusterRole
-	if exists, err := r.createRbacObj(&clusterRole, &clusterRoleObj, &tenant, ctx); err != nil {
-		return ctrl.Result{}, err
-	} else if exists {
-		if !reflect.DeepEqual(clusterRole.Rules, clusterRoleObj.Rules) {
-			clusterRoleObj.Rules = clusterRole.Rules
-			if err := r.updateObject(&clusterRoleObj, ctx); err != nil {
-				logger.Error(err, "Error updating resource", "Name", clusterRoleObj.Name)
-				return ctrl.Result{}, err
+	for _, t := range tenantList.Items {
+		var tenant v1alpha1.DBaaSTenant
+		if err := r.Get(ctx, types.NamespacedName{Name: t.Name}, &tenant); err != nil {
+			if errors.IsNotFound(err) {
+				// CR deleted since request queued, child objects getting GC'd, no requeue
+				return ctrl.Result{}, nil
 			}
-			logger.Info(clusterRoleObj.Kind+" resource updated", "Name", clusterRoleObj.Name)
+			logger.Error(err, "Error fetching DBaaS Tenant for reconcile")
+			return ctrl.Result{}, err
 		}
-	}
-	var clusterRoleBindingObj rbacv1.ClusterRoleBinding
-	if exists, err := r.createRbacObj(&clusterRolebinding, &clusterRoleBindingObj, &tenant, ctx); err != nil {
-		return ctrl.Result{}, err
-	} else if exists {
-		if !reflect.DeepEqual(clusterRolebinding.RoleRef, clusterRoleBindingObj.RoleRef) ||
-			!reflect.DeepEqual(clusterRolebinding.Subjects, clusterRoleBindingObj.Subjects) {
-			clusterRoleBindingObj.RoleRef = clusterRolebinding.RoleRef
-			clusterRoleBindingObj.Subjects = clusterRolebinding.Subjects
-			if err := r.updateObject(&clusterRoleBindingObj, ctx); err != nil {
-				logger.Error(err, "Error updating resource", "Name", clusterRoleBindingObj.Name)
-				return ctrl.Result{}, err
-			}
-			logger.Info(clusterRoleBindingObj.Kind+" resource updated", "Name", clusterRoleBindingObj.Name)
-		}
-	}
 
-	// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
-	for _, inventory := range inventoryList.Items {
-		// should we return anything on err for these reconciles?
-		// _, err = r.InventoryCtrl.Reconcile(ctx, invReq)
-		r.InventoryCtrl.Reconcile(ctx, reconcile.Request{
-			NamespacedName: types.NamespacedName{Name: inventory.Name, Namespace: inventory.Namespace},
-		})
+		// Get list of DBaaSInventories from tenant namespace
+		var inventoryList v1alpha1.DBaaSInventoryList
+		if err := r.List(ctx, &inventoryList, &client.ListOptions{Namespace: tenant.Spec.InventoryNamespace}); err != nil {
+			logger.Error(err, "Error fetching DBaaS Inventory List for reconcile")
+			return ctrl.Result{}, err
+		}
+
+		//
+		// Tenant RBAC
+		//
+		inventoryAuthz := getAllAuthzFromInventoryList(inventoryList, tenant)
+		clusterRole, clusterRolebinding := tenantRbacObjs(tenant, inventoryAuthz)
+		var clusterRoleObj rbacv1.ClusterRole
+		if exists, err := r.createRbacObj(&clusterRole, &clusterRoleObj, &tenant, ctx); err != nil {
+			return ctrl.Result{}, err
+		} else if exists {
+			if !reflect.DeepEqual(clusterRole.Rules, clusterRoleObj.Rules) {
+				clusterRoleObj.Rules = clusterRole.Rules
+				if err := r.updateObject(&clusterRoleObj, ctx); err != nil {
+					logger.Error(err, "Error updating resource", "Name", clusterRoleObj.Name)
+					return ctrl.Result{}, err
+				}
+				logger.Info(clusterRoleObj.Kind+" resource updated", "Name", clusterRoleObj.Name)
+			}
+		}
+		var clusterRoleBindingObj rbacv1.ClusterRoleBinding
+		if exists, err := r.createRbacObj(&clusterRolebinding, &clusterRoleBindingObj, &tenant, ctx); err != nil {
+			return ctrl.Result{}, err
+		} else if exists {
+			if !reflect.DeepEqual(clusterRolebinding.RoleRef, clusterRoleBindingObj.RoleRef) ||
+				!reflect.DeepEqual(clusterRolebinding.Subjects, clusterRoleBindingObj.Subjects) {
+				clusterRoleBindingObj.RoleRef = clusterRolebinding.RoleRef
+				clusterRoleBindingObj.Subjects = clusterRolebinding.Subjects
+				if err := r.updateObject(&clusterRoleBindingObj, ctx); err != nil {
+					logger.Error(err, "Error updating resource", "Name", clusterRoleBindingObj.Name)
+					return ctrl.Result{}, err
+				}
+				logger.Info(clusterRoleBindingObj.Kind+" resource updated", "Name", clusterRoleBindingObj.Name)
+			}
+		}
+
+		// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
+		for _, inventory := range inventoryList.Items {
+			// should we return anything on err for these reconciles?
+			// _, err = r.InventoryCtrl.Reconcile(ctx, invReq)
+			r.InventoryCtrl.Reconcile(ctx, reconcile.Request{
+				NamespacedName: types.NamespacedName{Name: inventory.Name, Namespace: inventory.Namespace},
+			})
+		}
 	}
 
 	// re-run reconcile every minute to ensure tenant rbac is accurate.
