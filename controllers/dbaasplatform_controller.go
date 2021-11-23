@@ -34,7 +34,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -243,10 +242,11 @@ func (r *DBaaSPlatformReconciler) createPlatformCR(ctx context.Context, serverCl
 func (r *DBaaSPlatformReconciler) getInstallationPlatforms() []dbaasv1alpha1.PlatformsName {
 
 	return []dbaasv1alpha1.PlatformsName{
-		dbaasv1alpha1.CrunchyBridgeInstallation,
-		dbaasv1alpha1.MongoDBAtlasInstallation,
+		//Deploy Dynamic plugin and Console Telemetry Plugin before provider operators
 		dbaasv1alpha1.DBassDynamicPluginInstallation,
 		dbaasv1alpha1.ConsoleTelemetryPluginInstallation,
+		dbaasv1alpha1.CrunchyBridgeInstallation,
+		dbaasv1alpha1.MongoDBAtlasInstallation,
 		dbaasv1alpha1.ServiceBindingInstallation,
 	}
 
