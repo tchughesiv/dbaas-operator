@@ -113,7 +113,6 @@ func (r *DBaaSAuthzReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					}},
 				}
 			}),
-			builder.WithPredicates(onlyCreateEvents),
 		).
 		WithOptions(
 			controller.Options{MaxConcurrentReconciles: 6},

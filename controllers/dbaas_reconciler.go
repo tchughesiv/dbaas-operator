@@ -25,20 +25,6 @@ import (
 // InstallNamespaceEnvVar is the constant for env variable INSTALL_NAMESPACE
 var InstallNamespaceEnvVar = "INSTALL_NAMESPACE"
 var inventoryNamespaceKey = ".spec.inventoryNamespace"
-var onlyCreateEvents = predicate.Funcs{
-	CreateFunc: func(e event.CreateEvent) bool {
-		return true
-	},
-	UpdateFunc: func(e event.UpdateEvent) bool {
-		return false
-	},
-	DeleteFunc: func(e event.DeleteEvent) bool {
-		return false
-	},
-	GenericFunc: func(e event.GenericEvent) bool {
-		return false
-	},
-}
 var ignoreCreateEvents = predicate.Funcs{
 	CreateFunc: func(e event.CreateEvent) bool {
 		return false
@@ -51,6 +37,20 @@ var ignoreCreateEvents = predicate.Funcs{
 	},
 	GenericFunc: func(e event.GenericEvent) bool {
 		return true
+	},
+}
+var ignoreAllEvents = predicate.Funcs{
+	CreateFunc: func(e event.CreateEvent) bool {
+		return false
+	},
+	UpdateFunc: func(e event.UpdateEvent) bool {
+		return false
+	},
+	DeleteFunc: func(e event.DeleteEvent) bool {
+		return false
+	},
+	GenericFunc: func(e event.GenericEvent) bool {
+		return false
 	},
 }
 

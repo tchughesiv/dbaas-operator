@@ -68,11 +68,11 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.DBaaSTenant{}, builder.WithPredicates(ignoreCreateEvents)).
+		For(&v1alpha1.DBaaSTenant{}, builder.WithPredicates(ignoreAllEvents)).
 		Owns(&rbacv1.ClusterRole{}, builder.WithPredicates(ignoreCreateEvents)).
 		Owns(&rbacv1.ClusterRoleBinding{}, builder.WithPredicates(ignoreCreateEvents)).
 		WithOptions(
-			controller.Options{MaxConcurrentReconciles: 2},
+			controller.Options{MaxConcurrentReconciles: 1},
 		).
 		Complete(r); err != nil {
 		return err
