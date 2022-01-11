@@ -30,8 +30,7 @@ var ignoreCreateEvents = predicate.Funcs{
 		return false
 	},
 	UpdateFunc: func(e event.UpdateEvent) bool {
-		// ?
-		return true
+		return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 	},
 	DeleteFunc: func(e event.DeleteEvent) bool {
 		return true
