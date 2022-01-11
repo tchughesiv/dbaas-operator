@@ -200,26 +200,27 @@ func (r *DBaaSAuthzReconciler) reconcileTenantAuthz(ctx context.Context, tenant 
 		return err
 	}
 
-	// continue only if inventories exist in the namespace
-	if len(inventoryList.Items) > 0 {
+	/*
+		// continue only if inventories exist in the namespace
+		if len(inventoryList.Items) > 0 {
 
-		tenantList, err := r.tenantListByInventoryNS(ctx, tenant.Spec.InventoryNamespace)
-		if err != nil {
-			logger.Error(err, "unable to list tenants")
-			return err
-		}
-
-		//
-		// Inventory RBAC
-		//
-		// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
-		for _, inventory := range inventoryList.Items {
-			if err := r.reconcileInventoryRbacObjs(ctx, inventory, tenantList); err != nil {
+			tenantList, err := r.tenantListByInventoryNS(ctx, tenant.Spec.InventoryNamespace)
+			if err != nil {
+				logger.Error(err, "unable to list tenants")
 				return err
 			}
-		}
-	}
 
+			//
+			// Inventory RBAC
+			//
+			// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
+			for _, inventory := range inventoryList.Items {
+				if err := r.reconcileInventoryRbacObjs(ctx, inventory, tenantList); err != nil {
+					return err
+				}
+			}
+		}
+	*/
 	return nil
 }
 
