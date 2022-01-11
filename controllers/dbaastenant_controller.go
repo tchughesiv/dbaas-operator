@@ -68,6 +68,7 @@ func (r *DBaaSTenantReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSTenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
+		// watches only for updates/deletes of clusterroles/bindings, triggers tenant reconcile
 		For(&v1alpha1.DBaaSTenant{}, builder.WithPredicates(ignoreAllEvents)).
 		Owns(&rbacv1.ClusterRole{}, builder.WithPredicates(ignoreCreateEvents)).
 		Owns(&rbacv1.ClusterRoleBinding{}, builder.WithPredicates(ignoreCreateEvents)).

@@ -30,6 +30,7 @@ var ignoreCreateEvents = predicate.Funcs{
 		return false
 	},
 	UpdateFunc: func(e event.UpdateEvent) bool {
+		// ?
 		return true
 	},
 	DeleteFunc: func(e event.DeleteEvent) bool {

@@ -89,7 +89,7 @@ func getAuthzName(ns string) string {
 func (r *DBaaSAuthzReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		Named("dbaasauthz").
-		// inventory events should trigger full authz reconcile
+		// all inventory events should trigger full authz reconcile
 		For(&v1alpha1.DBaaSInventory{}).
 		Watches(
 			&source.Kind{Type: &rbacv1.Role{}},
@@ -101,7 +101,8 @@ func (r *DBaaSAuthzReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			// for most rolebindings, to reduce memory footprint, only cache metadata
 			builder.OnlyMetadata,
 		).
-		// ????
+		// all tenant events should trigger full authz reconcile
+		// ... tenant events are transformed to pass inventory namespace in request
 		Watches(
 			&source.Kind{Type: &v1alpha1.DBaaSTenant{}},
 			handler.EnqueueRequestsFromMapFunc(func(o client.Object) []reconcile.Request {
@@ -200,27 +201,6 @@ func (r *DBaaSAuthzReconciler) reconcileTenantAuthz(ctx context.Context, tenant 
 		return err
 	}
 
-	/*
-		// continue only if inventories exist in the namespace
-		if len(inventoryList.Items) > 0 {
-
-			tenantList, err := r.tenantListByInventoryNS(ctx, tenant.Spec.InventoryNamespace)
-			if err != nil {
-				logger.Error(err, "unable to list tenants")
-				return err
-			}
-
-			//
-			// Inventory RBAC
-			//
-			// Reconcile each inventory in the tenant's namespace to ensure proper RBAC is created
-			for _, inventory := range inventoryList.Items {
-				if err := r.reconcileInventoryRbacObjs(ctx, inventory, tenantList); err != nil {
-					return err
-				}
-			}
-		}
-	*/
 	return nil
 }
 
