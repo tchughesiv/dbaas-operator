@@ -159,6 +159,8 @@ func (r *Reconciler) reconcileDeployment(cr *v1alpha1.DBaaSPlatform, ctx context
 		}
 		replicas := int32(3)
 		defaultMode := int32(420)
+		ptrTrue := true
+		ptrFalse := false
 		percentageOfPods := intstr.FromString("25%")
 		deployment.Spec.Replicas = &replicas
 		deployment.Spec.Selector = &metav1.LabelSelector{
@@ -170,6 +172,9 @@ func (r *Reconciler) reconcileDeployment(cr *v1alpha1.DBaaSPlatform, ctx context
 			Labels: map[string]string{
 				"app": r.pluginName,
 			},
+		}
+		deployment.Spec.Template.Spec.SecurityContext = &v1.PodSecurityContext{
+			RunAsNonRoot: &ptrTrue,
 		}
 		deployment.Spec.Template.Spec.Containers = []v1.Container{
 			{
@@ -195,6 +200,13 @@ func (r *Reconciler) reconcileDeployment(cr *v1alpha1.DBaaSPlatform, ctx context
 					},
 				},
 				Env: r.envs,
+				SecurityContext: &v1.SecurityContext{
+					AllowPrivilegeEscalation: &ptrFalse,
+					ReadOnlyRootFilesystem:   &ptrTrue,
+					Capabilities: &v1.Capabilities{
+						Drop: []v1.Capability{"NET_RAW"},
+					},
+				},
 			},
 		}
 		deployment.Spec.Template.Spec.Volumes = []v1.Volume{

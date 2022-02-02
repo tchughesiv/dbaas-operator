@@ -35,10 +35,6 @@ spec:
         image: controller:latest
         name: manager
         imagePullPolicy: Always
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
         livenessProbe:
           httpGet:
             path: /healthz
@@ -58,6 +54,12 @@ spec:
           requests:
             cpu: 100m
             memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - NET_RAW
         env:
         - name: INSTALL_NAMESPACE
           valueFrom:
