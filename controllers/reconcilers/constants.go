@@ -1,9 +1,8 @@
 package reconcilers
 
 import (
-	corev1 "k8s.io/api/core/v1"
-
 	dbaasv1alpha1 "github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -22,7 +21,7 @@ const (
 	CRUNCHY_BRIDGE_CHANNEL     = "alpha"
 
 	// MONGODB_ATLAS
-	MONGODB_ATLAS_CATALOG_IMG = "quay.io/mongodb/mongodb-atlas-kubernetes-dbaas-catalog:0.3.0"
+	MONGODB_ATLAS_CATALOG_IMG = "quay.io/tchughesiv/mongodb-atlas-kubernetes-dbaas-catalog:0.3.0"
 	MONGODB_ATLAS_CSV         = "mongodb-atlas-kubernetes.v0.3.0"
 	MONGODB_ATLAS_NAME        = "mongodb-atlas"
 	MONGODB_ATLAS_DISPLAYNAME = "MongoDB Atlas Operator"
@@ -40,7 +39,7 @@ const (
 	COCKROACHDB_CHANNEL     = "alpha"
 
 	// DBAAS_DYNAMIC_PLUGIN
-	DBAAS_DYNAMIC_PLUGIN_IMG          = "quay.io/ecosystem-appeng/dbaas-dynamic-plugin:0.2.0"
+	DBAAS_DYNAMIC_PLUGIN_IMG          = "quay.io/tchughesiv/dbaas-dynamic-plugin:0.2.0"
 	DBAAS_DYNAMIC_PLUGIN_NAME         = "dbaas-dynamic-plugin"
 	DBAAS_DYNAMIC_PLUGIN_DISPLAY_NAME = "OpenShift Database as a Service Dynamic Plugin"
 

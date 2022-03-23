@@ -4,7 +4,6 @@ metadata:
   name: atlas-inventory
 spec:
   providerRef:
-    name: atlas-provider-registration
+    name: mongodb-atlas-registration
   credentialsRef:
-    namespace: openshift-dbaas-operator
     name: atlas-inventory-credentials

@@ -1,24 +1,20 @@
-# permissions for end users to edit dbaastenants.
+# permissions for end users to view dbaasconfigs.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: dbaastenant-editor-role
+  name: dbaasconfig-viewer-role
 rules:
 - apiGroups:
   - dbaas.redhat.com
   resources:
-  - dbaastenants
+  - dbaasconfigs
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - dbaas.redhat.com
   resources:
-  - dbaastenants/status
+  - dbaasconfigs/status
   verbs:
   - get
