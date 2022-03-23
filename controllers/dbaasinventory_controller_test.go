@@ -28,9 +28,9 @@ import (
 )
 
 var _ = Describe("DBaaSInventory controller with errors", func() {
-	Context("after creating DBaaSInventory without tenant in the target namespace", func() {
-		inventoryName := "test-inventory-no-tenant"
-		ns := "testns-no-tenant"
+	Context("after creating DBaaSInventory without config in the target namespace", func() {
+		inventoryName := "test-inventory-no-config"
+		ns := "testns-no-config"
 		nsSpec := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}}
 
 		DBaaSInventorySpec := &v1alpha1.DBaaSInventorySpec{
@@ -54,7 +54,7 @@ var _ = Describe("DBaaSInventory controller with errors", func() {
 		BeforeEach(assertResourceCreationIfNotExists(&testSecret))
 		BeforeEach(assertResourceCreationIfNotExists(nsSpec))
 		BeforeEach(assertResourceCreationIfNotExists(createdDBaaSInventory))
-		It("reconcile with error", assertDBaaSResourceStatusUpdated(createdDBaaSInventory, metav1.ConditionFalse, v1alpha1.DBaaSTenantNotFound))
+		It("reconcile with error", assertDBaaSResourceStatusUpdated(createdDBaaSInventory, metav1.ConditionFalse, v1alpha1.DBaaSConfigNotFound))
 	})
 
 	Context("after creating DBaaSInventory without valid provider", func() {
@@ -78,7 +78,8 @@ var _ = Describe("DBaaSInventory controller with errors", func() {
 			},
 		}
 		BeforeEach(assertResourceCreationIfNotExists(&testSecret))
-		BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+		BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
+		BeforeEach(assertDBaaSResourceStatusUpdated(&defaultConfig, metav1.ConditionTrue, v1alpha1.Ready))
 		BeforeEach(assertResourceCreationIfNotExists(createdDBaaSInventory))
 		It("reconcile with error", assertDBaaSResourceStatusUpdated(createdDBaaSInventory, metav1.ConditionFalse, v1alpha1.DBaaSProviderNotFound))
 	})
@@ -87,7 +88,8 @@ var _ = Describe("DBaaSInventory controller with errors", func() {
 var _ = Describe("DBaaSInventory controller - nominal", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&testSecret))
 	BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-	BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+	BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
+	BeforeEach(assertDBaaSResourceStatusUpdated(&defaultConfig, metav1.ConditionTrue, v1alpha1.Ready))
 
 	Describe("reconcile", func() {
 		Context("after creating DBaaSInventory", func() {

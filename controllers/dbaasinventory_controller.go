@@ -56,19 +56,19 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	tenantList, err := r.tenantListByInventoryNS(ctx, req.Namespace)
+	configList, err := r.configListByNS(ctx, req.Namespace)
 	if err != nil {
-		logger.Error(err, "unable to list tenants")
+		logger.Error(err, "unable to list configs")
 		return ctrl.Result{}, err
 	}
-
-	if len(tenantList.Items) == 0 {
-		logger.Info("No DBaaS tenant found for the target namespace", "Namespace", req.Namespace)
+	activeConfig := getActiveConfig(configList)
+	if activeConfig == nil {
+		logger.Info("No DBaaSConfig found for the target namespace", "Namespace", req.Namespace)
 		cond := metav1.Condition{
 			Type:    v1alpha1.DBaaSInventoryReadyType,
 			Status:  metav1.ConditionFalse,
-			Reason:  v1alpha1.DBaaSTenantNotFound,
-			Message: v1alpha1.MsgTenantNotFound,
+			Reason:  v1alpha1.DBaaSConfigNotFound,
+			Message: v1alpha1.MsgConfigNotFound,
 		}
 		apimeta.SetStatusCondition(&inventory.Status.Conditions, cond)
 		if err := r.Client.Status().Update(ctx, &inventory); err != nil {
