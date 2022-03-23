@@ -29,10 +29,11 @@ const (
 	DBaaSConnectionProviderSyncType string = "ReadyForBinding"
 	DBaaSInstanceReadyType          string = "InstanceReady"
 	DBaaSInstanceProviderSyncType   string = "ProvisionReady"
+	DBaaSConfigReadyType            string = "ConfigReady"
 
 	// DBaaS condition reasons
 	Ready                       string = "Ready"
-	DBaaSTenantNotFound         string = "DBaaSTenantNotFound"
+	DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 	DBaaSProviderNotFound       string = "DBaaSProviderNotFound"
 	DBaaSInventoryNotFound      string = "DBaaSInventoryNotFound"
 	DBaaSInventoryNotReady      string = "DBaaSInventoryNotReady"
@@ -44,7 +45,8 @@ const (
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"
 	MsgProviderCRReconcileInProgress string = "DBaaS Provider Custom Resource reconciliation in progress"
 	MsgInventoryNotReady             string = "Inventory discovery not done"
-	MsgTenantNotFound                string = "Failed to find DBaaS tenants"
+	MsgConfigReady                   string = "Config is active"
+	MsgConfigNotReady                string = "Another active Config already exists"
 	MsgInvalidNamespace              string = "Invalid connection namespace for the referenced inventory"
 
 	TypeLabelValue    = "credentials"
@@ -123,6 +125,20 @@ type DBaaSInventorySpec struct {
 	// DBaaSProvider CR (CredentialFields key). It is recommended to place the Secret in a
 	// namespace with limited accessibility.
 	CredentialsRef *NamespacedName `json:"credentialsRef"`
+
+	// The configs for an inventory
+	DBaaSInventoryConfigs `json:",inline"`
+}
+
+// DBaaSInventoryConfigs configures inventories
+type DBaaSInventoryConfigs struct {
+	// Allow provisioning against inventory accounts
+	AllowProvisions *bool `json:"allowProvisions,omitempty"`
+
+	// Namespaces where DBaaSConnections/DBaaSInstances are allowed to reference a config's inventories.
+	// Each inventory can individually override this. Use "*" to allow all namespaces.
+	// If not set in either the config or inventory object, connections will only be allowed in the inventory namespace.
+	ConnectionNamespaces []string `json:"connectionNamespaces,omitempty"`
 }
 
 // DBaaSInventoryStatus defines the Inventory status to be used by provider operators

@@ -1,9 +1,8 @@
 package reconcilers
 
 import (
-	corev1 "k8s.io/api/core/v1"
-
 	dbaasv1alpha1 "github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -57,7 +56,13 @@ var InstallationPlatforms = map[dbaasv1alpha1.PlatformsName]dbaasv1alpha1.Platfo
 		Name:        DBAAS_DYNAMIC_PLUGIN_NAME,
 		Image:       DBAAS_DYNAMIC_PLUGIN_IMG,
 		DisplayName: DBAAS_DYNAMIC_PLUGIN_DISPLAY_NAME,
-		Type:        dbaasv1alpha1.TypeConsolePlugin,
+		Envs: []corev1.EnvVar{{
+			Name: "INSTALL_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"},
+			},
+		}},
+		Type: dbaasv1alpha1.TypeConsolePlugin,
 	},
 	dbaasv1alpha1.ConsoleTelemetryPluginInstallation: {
 		Name:        CONSOLE_TELEMETRY_PLUGIN_NAME,

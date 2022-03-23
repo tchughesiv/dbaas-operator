@@ -6,6 +6,18 @@ metadata:
       [
         {
           "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "kind": "DBaaSConfig",
+          "metadata": {
+            "name": "sample"
+          },
+          "spec": {
+            "connectionNamespaces": [
+              "foo"
+            ]
+          }
+        },
+        {
+          "apiVersion": "dbaas.redhat.com/v1alpha1",
           "kind": "DBaaSConnection",
           "metadata": {
             "name": "dbaasconnection-sample"
@@ -151,16 +163,6 @@ metadata:
               "name": "Red Hat DBaaS / MongoDB Atlas"
             }
           }
-        },
-        {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
-          "kind": "DBaaSTenant",
-          "metadata": {
-            "name": "sample"
-          },
-          "spec": {
-            "inventoryNamespace": "foo"
-          }
         }
       ]
     capabilities: Basic Install
@@ -180,6 +182,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: DBaaSConfig is the Schema for the dbaasconfigs API
+      displayName: DBaaSConfig
+      kind: DBaaSConfig
+      name: dbaasconfigs.dbaas.redhat.com
+      version: v1alpha1
     - description: DBaaSConnection is the Schema for the dbaasconnections API
       displayName: DBaaSConnection
       kind: DBaaSConnection
@@ -205,11 +212,6 @@ spec:
       displayName: DBaaSProvider
       kind: DBaaSProvider
       name: dbaasproviders.dbaas.redhat.com
-      version: v1alpha1
-    - description: DBaaSTenant is the Schema for the dbaastenants API
-      displayName: DBaaSTenant
-      kind: DBaaSTenant
-      name: dbaastenants.dbaas.redhat.com
       version: v1alpha1
   description: |
     The Red Hat OpenShift Database Access Operator enables OpenShift users to discover & connect with database instances
@@ -242,18 +244,6 @@ spec:
           verbs:
           - get
           - patch
-        - apiGroups:
-          - ""
-          - authorization.openshift.io
-          resources:
-          - localresourceaccessreviews
-          - localsubjectaccessreviews
-          - resourceaccessreviews
-          - selfsubjectrulesreviews
-          - subjectaccessreviews
-          - subjectrulesreviews
-          verbs:
-          - create
         - apiGroups:
           - apps
           resources:
@@ -369,34 +359,6 @@ spec:
           - get
           - list
           - update
-          - watch
-        - apiGroups:
-          - rbac.authorization.k8s.io
-          resources:
-          - clusterrolebindings
-          - clusterroles
-          verbs:
-          - create
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - rbac.authorization.k8s.io
-          resources:
-          - clusterrolebindings/finalizers
-          - clusterroles/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - rbac.authorization.k8s.io
-          resources:
-          - rolebindings
-          - roles
-          verbs:
-          - get
-          - list
           - watch
         - apiGroups:
           - authentication.k8s.io
@@ -555,6 +517,26 @@ spec:
     containerPort: 443
     deploymentName: dbaas-operator-controller-manager
     failurePolicy: Fail
+    generateName: vdbaasconfig.kb.io
+    rules:
+    - apiGroups:
+      - dbaas.redhat.com
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - dbaasconfigs
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaasconfig
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: dbaas-operator-controller-manager
+    failurePolicy: Fail
     generateName: vdbaasconnection.kb.io
     rules:
     - apiGroups:
@@ -589,23 +571,3 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaasinventory
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: dbaas-operator-controller-manager
-    failurePolicy: Fail
-    generateName: vdbaastenant.kb.io
-    rules:
-    - apiGroups:
-      - dbaas.redhat.com
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - dbaastenants
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaastenant

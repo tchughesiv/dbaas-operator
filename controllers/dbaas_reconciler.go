@@ -33,7 +33,6 @@ import (
 // InstallNamespaceEnvVar is the constant for env variable INSTALL_NAMESPACE
 var (
 	InstallNamespaceEnvVar = "INSTALL_NAMESPACE"
-	inventoryNamespaceKey  = ".spec.inventoryNamespace"
 )
 
 var ignoreCreateEvents = predicate.Funcs{
@@ -51,20 +50,6 @@ var ignoreCreateEvents = predicate.Funcs{
 	},
 	GenericFunc: func(e event.GenericEvent) bool {
 		return true
-	},
-}
-var ignoreAllEvents = predicate.Funcs{
-	CreateFunc: func(e event.CreateEvent) bool {
-		return false
-	},
-	UpdateFunc: func(e event.UpdateEvent) bool {
-		return false
-	},
-	DeleteFunc: func(e event.DeleteEvent) bool {
-		return false
-	},
-	GenericFunc: func(e event.GenericEvent) bool {
-		return false
 	},
 }
 
@@ -139,30 +124,28 @@ func (r *DBaaSReconciler) parseProviderObject(unstructured *unstructured.Unstruc
 	return nil
 }
 
-func (r *DBaaSReconciler) createOwnedObject(k8sObj, owner client.Object, ctx context.Context) error {
-	if err := ctrl.SetControllerReference(owner, k8sObj, r.Scheme); err != nil {
-		return err
+// change to only return ACTIVE config w/ condition.status == true, in addition to all configs as separate var?
+// populate Config List based on namespace
+func (r *DBaaSReconciler) configListByNS(ctx context.Context, namespace string) (v1alpha1.DBaaSConfigList, error) {
+	var configListByNS v1alpha1.DBaaSConfigList
+	if err := r.List(ctx, &configListByNS, &client.ListOptions{Namespace: namespace}); err != nil {
+		return v1alpha1.DBaaSConfigList{}, err
 	}
-	if err := r.Create(ctx, k8sObj); err != nil {
-		return err
-	}
-	return nil
+	return configListByNS, nil
 }
 
-func (r *DBaaSReconciler) updateObject(k8sObj client.Object, ctx context.Context) error {
-	if err := r.Update(ctx, k8sObj); err != nil {
-		return err
+// getActiveConfig will return the ACTIVE config w/ condition.status == true
+func (r *DBaaSReconciler) getActiveConfig(ctx context.Context, namespace string) (v1alpha1.DBaaSConfig, error) {
+	configList, err := r.configListByNS(ctx, namespace)
+	if err != nil {
+		return v1alpha1.DBaaSConfig{}, err
 	}
-	return nil
-}
-
-// populate Tenant List based on spec.inventoryNamespace
-func (r *DBaaSReconciler) tenantListByInventoryNS(ctx context.Context, inventoryNamespace string) (v1alpha1.DBaaSTenantList, error) {
-	var tenantListByNS v1alpha1.DBaaSTenantList
-	if err := r.List(ctx, &tenantListByNS, client.MatchingFields{inventoryNamespaceKey: inventoryNamespace}); err != nil {
-		return v1alpha1.DBaaSTenantList{}, err
+	for _, config := range configList.Items {
+		if apimeta.IsStatusConditionTrue(config.Status.Conditions, v1alpha1.DBaaSConfigReadyType) {
+			return config, nil
+		}
 	}
-	return tenantListByNS, nil
+	return v1alpha1.DBaaSConfig{}, nil
 }
 
 // check if namespace is a valid connection namespace
@@ -173,12 +156,12 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 	}
 	validNamespaces := inventory.Spec.ConnectionNamespaces
 	if len(validNamespaces) == 0 {
-		tenantList, err := r.tenantListByInventoryNS(ctx, inventory.Namespace)
+		configList, err := r.configListByNS(ctx, inventory.Namespace)
 		if err != nil {
 			return false, err
 		}
-		for _, tenant := range tenantList.Items {
-			validNamespaces = append(validNamespaces, tenant.Spec.ConnectionNamespaces...)
+		for _, config := range configList.Items {
+			validNamespaces = append(validNamespaces, config.Spec.ConnectionNamespaces...)
 		}
 	}
 	// valid if all namespaces are supported via wildcard
@@ -186,6 +169,22 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 		return true, nil
 	}
 	return contains(validNamespaces, namespace), nil
+}
+
+// Check if provisioning is allowed against an inventory
+func (r *DBaaSReconciler) canProvision(ctx context.Context, namespace string, inventory *v1alpha1.DBaaSInventory) (canProvision bool, err error) {
+	if inventory.Spec.AllowProvisions != nil {
+		canProvision = *inventory.Spec.AllowProvisions
+	} else {
+		config, err := r.getActiveConfig(ctx, namespace)
+		if err != nil {
+			return canProvision, err
+		}
+		if config.Spec.AllowProvisions != nil {
+			canProvision = *config.Spec.AllowProvisions
+		}
+	}
+	return
 }
 
 func (r *DBaaSReconciler) reconcileProviderResource(providerName string, DBaaSObject client.Object,
@@ -287,6 +286,10 @@ func (r *DBaaSReconciler) checkInventory(inventoryRef v1alpha1.NamespacedName, D
 	if err != nil {
 		return inventory, validNS, err
 	}
+	_, err = r.canProvision(ctx, DBaaSObject.GetNamespace(), inventory)
+	if err != nil {
+		return inventory, validNS, err
+	}
 	if validNS {
 		// The inventory must be in ready status before we can move on
 		invCond := apimeta.FindStatusCondition(inventory.Status.Conditions, v1alpha1.DBaaSInventoryReadyType)
@@ -348,23 +351,6 @@ func (r *DBaaSReconciler) checkCredsRefLabel(ctx context.Context, inventory v1al
 	return nil
 }
 
-// update object upon ownerReference verification
-func (r *DBaaSReconciler) updateIfOwned(ctx context.Context, owner, obj client.Object) error {
-	logger := ctrl.LoggerFrom(ctx)
-	name := obj.GetName()
-	kind := obj.GetObjectKind().GroupVersionKind().Kind
-	if owns, err := isOwner(owner, obj, r.Scheme); !owns {
-		logger.Info(kind+" ownership not verified, won't be updated", "Name", name)
-		return err
-	}
-	if err := r.updateObject(obj, ctx); err != nil {
-		logger.Error(err, "Error updating resource", "Name", name)
-		return err
-	}
-	logger.Info(kind+" resource updated", "Name", name)
-	return nil
-}
-
 // checks if one object is set as owner/controller of another
 func isOwner(owner, ownedObj client.Object, scheme *runtime.Scheme) (owns bool, err error) {
 	exampleObj := &unstructured.Unstructured{}
@@ -388,48 +374,6 @@ func GetInstallNamespace() (string, error) {
 		return "", fmt.Errorf("%s must be set", InstallNamespaceEnvVar)
 	}
 	return ns, nil
-}
-
-// returns a unique matching subset of the provided slices
-func matchSlices(input1, input2 []string) []string {
-	m := []string{}
-	for _, val1 := range input1 {
-		for _, val2 := range input2 {
-			if val1 == val2 {
-				m = append(m, val1)
-			}
-		}
-	}
-
-	return uniqueStrSlice(m)
-}
-
-// returns a unique subset of the provided slice
-func uniqueStrSlice(input []string) []string {
-	u := make([]string, 0, len(input))
-	m := make(map[string]bool)
-
-	for _, val := range input {
-		if _, ok := m[val]; !ok {
-			m[val] = true
-			u = append(u, val)
-		}
-	}
-
-	return u
-}
-
-// returns a subset of the provided slices, after removing certain entries
-func removeFromSlice(entriesToRemove, fromSlice []string) []string {
-	r := []string{}
-	for _, val := range fromSlice {
-		if !contains(entriesToRemove, val) {
-			r = append(r, val)
-		}
-
-	}
-
-	return r
 }
 
 // checks if a string is present in a slice

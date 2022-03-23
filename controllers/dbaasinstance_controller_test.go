@@ -116,7 +116,7 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 		}
 
 		BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-		BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+		BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 		BeforeEach(assertInventoryCreationWithProviderStatus(createdDBaaSInventory, metav1.ConditionFalse, testInventoryKind, providerInventoryStatus))
 		BeforeEach(assertResourceCreationIfNotExists(createdDBaaSInstance))
 		AfterEach(assertResourceDeletion(createdDBaaSInstance))
@@ -131,6 +131,9 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 				Name:      testSecret.Name,
 				Namespace: testNamespace,
 			},
+			DBaaSInventoryConfigs: v1alpha1.DBaaSInventoryConfigs{
+				ConnectionNamespaces: []string{"valid-ns", "random"},
+			},
 		}
 		createdDBaaSInventory := &v1alpha1.DBaaSInventory{
 			ObjectMeta: metav1.ObjectMeta{
@@ -141,8 +144,7 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 				ProviderRef: v1alpha1.NamespacedName{
 					Name: testProviderName,
 				},
-				DBaaSInventorySpec:   *DBaaSInventorySpec,
-				ConnectionNamespaces: []string{"valid-ns", "random"},
+				DBaaSInventorySpec: *DBaaSInventorySpec,
 			},
 		}
 		DBaaSInstanceSpec := &v1alpha1.DBaaSInstanceSpec{
@@ -192,7 +194,7 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 
 		BeforeEach(assertResourceCreationIfNotExists(&otherNS))
 		BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-		BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+		BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 		BeforeEach(assertInventoryCreationWithProviderStatus(createdDBaaSInventory, metav1.ConditionTrue, testInventoryKind, providerInventoryStatus))
 		BeforeEach(assertResourceCreationIfNotExists(createdDBaaSInstance))
 		AfterEach(assertResourceDeletion(createdDBaaSInstance))
@@ -204,7 +206,7 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 var _ = Describe("DBaaSInstance controller - nominal", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&testSecret))
 	BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-	BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+	BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 
 	Describe("reconcile", func() {
 		Context("after creating DBaaSInventory", func() {
@@ -316,7 +318,7 @@ var _ = Describe("DBaaSInstance controller - nominal", func() {
 var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&testSecret))
 	BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-	BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+	BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 
 	Describe("reconcile", func() {
 		Context("after creating DBaaSInventory w/ addtl dev namespace set", func() {
@@ -340,8 +342,10 @@ var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 							Name:      testSecret.Name,
 							Namespace: testNamespace,
 						},
+						DBaaSInventoryConfigs: v1alpha1.DBaaSInventoryConfigs{
+							ConnectionNamespaces: []string{otherNS.Name},
+						},
 					},
-					ConnectionNamespaces: []string{otherNS.Name},
 				},
 			}
 			lastTransitionTime := getLastTransitionTimeForTest()
@@ -453,8 +457,10 @@ var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 							Name:      testSecret.Name,
 							Namespace: testNamespace,
 						},
+						DBaaSInventoryConfigs: v1alpha1.DBaaSInventoryConfigs{
+							ConnectionNamespaces: []string{"*"},
+						},
 					},
-					ConnectionNamespaces: []string{"*"},
 				},
 			}
 			lastTransitionTime := getLastTransitionTimeForTest()

@@ -89,7 +89,7 @@ var crunchyProvider = &v1alpha1.DBaaSProvider{
 	},
 }
 
-var defaultTenant = getDefaultTenant(testNamespace)
+var defaultConfig = getDefaultConfig(testNamespace)
 
 func assertResourceCreationIfNotExists(object client.Object) func() {
 	return func() {

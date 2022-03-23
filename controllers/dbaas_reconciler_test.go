@@ -24,9 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
-	oauthzv1 "github.com/openshift/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -102,10 +100,7 @@ var _ = Describe("Get DBaaSProvider", func() {
 	AfterEach(assertResourceDeletion(provider))
 
 	It("should get the expected DBaaSProvider", func() {
-		provider.TypeMeta = metav1.TypeMeta{
-			Kind:       "DBaaSProvider",
-			APIVersion: v1alpha1.GroupVersion.Group + "/" + v1alpha1.GroupVersion.Version,
-		}
+		provider.SetGroupVersionKind(v1alpha1.GroupVersion.WithKind("DBaaSProvider"))
 
 		p, err := dRec.getDBaaSProvider("test-provider", ctx)
 		Expect(err).NotTo(HaveOccurred())
@@ -208,90 +203,73 @@ var _ = Describe("Watch DBaaS provider Object", func() {
 	})
 })
 
-var _ = Describe("list tenants by inventory namespace", func() {
-	Context("after creating DBaaSTenants", func() {
-		ns := "test-namespace"
-		tenant1 := getDefaultTenant(ns)
-		tenant1.Name = "test-tenant-1"
-		tenant2 := getDefaultTenant(ns)
-		tenant2.Name = "test-tenant-2"
-		BeforeEach(assertResourceCreation(&tenant1))
-		AfterEach(assertResourceDeletion(&tenant1))
-		BeforeEach(assertResourceCreation(&tenant2))
-		AfterEach(assertResourceDeletion(&tenant2))
+var _ = Describe("list configs by inventory namespace", func() {
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-namespace-new",
+		},
+	}
+	BeforeEach(assertResourceCreationIfNotExists(ns))
+	config1 := getDefaultConfig(ns.Name)
+	config2 := getDefaultConfig(ns.Name)
+	config2.Name = "test-config-1"
+	config3 := getDefaultConfig(ns.Name)
+	config3.Name = "test-config-2"
+	BeforeEach(assertResourceCreation(&config1))
+	BeforeEach(assertResourceCreation(&config2))
+	BeforeEach(assertResourceCreation(&config3))
+	AfterEach(assertResourceDeletion(&config1))
+	AfterEach(assertResourceDeletion(&config2))
+	AfterEach(assertResourceDeletion(&config3))
 
-		Context("when listing the tenants with the inventory namespace", func() {
-			It("should return all the tenants matching the inventory namespace", func() {
-				tenant1.TypeMeta = metav1.TypeMeta{
-					Kind:       "DBaaSTenant",
-					APIVersion: v1alpha1.GroupVersion.Group + "/" + v1alpha1.GroupVersion.Version,
-				}
-				tenant2.TypeMeta = metav1.TypeMeta{
-					Kind:       "DBaaSTenant",
-					APIVersion: v1alpha1.GroupVersion.Group + "/" + v1alpha1.GroupVersion.Version,
-				}
-
-				tenantList, err := dRec.tenantListByInventoryNS(ctx, ns)
+	Context("after creating DBaaSConfigs", func() {
+		Context("when listing the configs in the namespace", func() {
+			It("should return all the created configs", func() {
+				configList, err := dRec.configListByNS(ctx, ns.Name)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(tenantList.Items).Should(HaveLen(2))
-				Expect(tenantList.Items).Should(ConsistOf(tenant1, tenant2))
+				Expect(configList.Items).Should(HaveLen(3))
+
+				numActive := getNumActive("", configList)
+				Expect(numActive).Should(Equal(1))
+				for _, config := range configList.Items {
+					if apimeta.IsStatusConditionTrue(config.Status.Conditions, v1alpha1.DBaaSConfigReadyType) {
+						numActive = getNumActive(config.Name, configList)
+						Expect(numActive).Should(Equal(0))
+
+						checkConfig, err := dRec.getActiveConfig(ctx, config.Namespace)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(config).Should(Equal(checkConfig))
+					} else {
+						numActive = getNumActive(config.Name, configList)
+						Expect(numActive).Should(Equal(1))
+					}
+				}
+				canProvision, err := dRec.canProvision(ctx, ns.Name, &v1alpha1.DBaaSInventory{})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(canProvision).Should(BeTrue())
 			})
 		})
 
-		Context("when listing the tenants with an invalid namespace", func() {
-			It("should return no tenants", func() {
-				tenantList, err := dRec.tenantListByInventoryNS(ctx, "not-test-namespace")
+		Context("when listing the configs with an invalid namespace", func() {
+			It("should return no configs", func() {
+				configList, err := dRec.configListByNS(ctx, "not-test-namespace")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(tenantList.Items).Should(HaveLen(0))
+				Expect(configList.Items).Should(HaveLen(0))
 			})
 		})
 	})
-})
-
-var _ = Describe("Check hasNoEditOrListVerbs function", func() {
-	defer GinkgoRecover()
-
-	// ClusterRoles created by operator should not grant 'edit' or 'list' rights
-	serviceAdminAuthz := &oauthzv1.ResourceAccessReviewResponse{}
-	tenantListAuthz := &oauthzv1.ResourceAccessReviewResponse{}
-	clusterRole, clusterRolebinding := tenantRbacObjs(defaultTenant, serviceAdminAuthz, &oauthzv1.ResourceAccessReviewResponse{}, tenantListAuthz)
-	Expect(hasNoEditOrListVerbs(&clusterRole)).To(BeTrue())
-	clusterRole.Rules = append(clusterRole.Rules, rbacv1.PolicyRule{
-		Verbs: []string{"watch"},
-	})
-	Expect(hasNoEditOrListVerbs(&clusterRole)).To(BeTrue())
-
-	// ClusterRoles with edit rights should return 'false'
-	clusterRole.Rules = append(clusterRole.Rules, rbacv1.PolicyRule{
-		Verbs: []string{"patch"},
-	})
-	Expect(hasNoEditOrListVerbs(&clusterRole)).To(BeFalse())
-
-	// Bindings should be ignored, return 'true'
-	Expect(hasNoEditOrListVerbs(&clusterRolebinding)).To(BeTrue())
 })
 
 var _ = Describe("Check isOwner function", func() {
 	defer GinkgoRecover()
 	scheme := runtime.NewScheme()
-
-	// error should be thrown due to missing scheme
 	ownedObj := &unstructured.Unstructured{}
-	owned, err := isOwner(&defaultTenant, ownedObj, scheme)
-	Expect(err).NotTo(BeNil())
-	Expect(owned).To(BeFalse())
 
 	// with scheme added, error is nil, but owner check should be false
 	utilruntime.Must(v1alpha1.AddToScheme(scheme))
-	owned, err = isOwner(&defaultTenant, ownedObj, scheme)
+	owned, err := isOwner(&defaultConfig, ownedObj, scheme)
 	Expect(err).To(BeNil())
 	Expect(owned).To(BeFalse())
-
-	// with ownership set, owner check should be true
-	Expect(ctrl.SetControllerReference(&defaultTenant, ownedObj, scheme)).To(BeNil())
-	owned, err = isOwner(&defaultTenant, ownedObj, scheme)
-	Expect(err).To(BeNil())
-	Expect(owned).To(BeTrue())
 
 	// setting namespaced object as owner of a cluster-scoped object should error
 	//   owner check should return false
@@ -318,7 +296,7 @@ var _ = Describe("Check inventory", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&testSecret2))
 	BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
 	BeforeEach(assertResourceCreationIfNotExists(crunchyProvider))
-	BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+	BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 
 	Context("after creating DBaaSInventory", func() {
 		inventoryName := "test-check-inventory"
@@ -529,7 +507,7 @@ var _ = Describe("Check inventory", func() {
 var _ = Describe("Reconcile Provider Resource", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&testSecret))
 	BeforeEach(assertResourceCreationIfNotExists(mongoProvider))
-	BeforeEach(assertResourceCreationIfNotExists(&defaultTenant))
+	BeforeEach(assertResourceCreationIfNotExists(&defaultConfig))
 
 	Context("after creating DBaaSInventory", func() {
 		inventoryName := "test-reconcile-provider-resource-inventory"

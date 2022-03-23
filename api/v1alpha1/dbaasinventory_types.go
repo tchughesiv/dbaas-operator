@@ -25,11 +25,6 @@ type DBaaSOperatorInventorySpec struct {
 	// A reference to a DBaaSProvider CR
 	ProviderRef NamespacedName `json:"providerRef"`
 
-	// Namespaces in which DBaaSConnections/DBaaSInstances are allowed to reference this Inventory.
-	// Overrides the corresponding DBaaSTenant setting. Use "*" to allow all namespaces.
-	// If not set in either the tenant or inventory object, connections will only be allowed in the inventory namespace.
-	ConnectionNamespaces []string `json:"connectionNamespaces,omitempty"`
-
 	// The properties that will be copied into the provider’s inventory Spec
 	DBaaSInventorySpec `json:",inline"`
 }

@@ -1,6 +1,7 @@
 apiVersion: dbaas.redhat.com/v1alpha1
-kind: DBaaSTenant
+kind: DBaaSConfig
 metadata:
   name: sample
 spec:
-  inventoryNamespace: foo
+  connectionNamespaces:
+  - foo

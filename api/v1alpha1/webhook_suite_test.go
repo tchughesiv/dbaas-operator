@@ -116,14 +116,7 @@ var _ = BeforeSuite(func() {
 	err = (&DBaaSInventory{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&DBaaSTenant{}).SetupWebhookWithManager(mgr)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = mgr.GetFieldIndexer().IndexField(context.Background(), &DBaaSTenant{}, inventoryNamespaceKey, func(rawObj client.Object) []string {
-		tenant := rawObj.(*DBaaSTenant)
-		inventoryNS := tenant.Spec.InventoryNamespace
-		return []string{inventoryNS}
-	})
+	err = (&DBaaSConfig{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

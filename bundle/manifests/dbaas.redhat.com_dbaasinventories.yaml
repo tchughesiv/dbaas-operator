@@ -35,12 +35,15 @@ spec:
           spec:
             description: DBaaSOperatorInventorySpec defines the desired state of DBaaSInventory
             properties:
+              allowProvisions:
+                description: Allow provisioning against inventory accounts
+                type: boolean
               connectionNamespaces:
-                description: Namespaces in which DBaaSConnections/DBaaSInstances are
-                  allowed to reference this Inventory. Overrides the corresponding
-                  DBaaSTenant setting. Use "*" to allow all namespaces. If not set
-                  in either the tenant or inventory object, connections will only
-                  be allowed in the inventory namespace.
+                description: Namespaces where DBaaSConnections/DBaaSInstances are
+                  allowed to reference a config's inventories. Each inventory can
+                  individually override this. Use "*" to allow all namespaces. If
+                  not set in either the config or inventory object, connections will
+                  only be allowed in the inventory namespace.
                 items:
                   type: string
                 type: array
