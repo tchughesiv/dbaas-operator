@@ -27,3 +27,7 @@ bundle_tmp*
 *~
 .vscode/
 .DS_Store
+
+# operator-manifest-tools output files
+references.json
+replacements.json

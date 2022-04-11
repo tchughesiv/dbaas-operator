@@ -217,6 +217,7 @@ bundle: manifests kustomize ## Generate bundle manifests and metadata, then vali
 	operator-sdk generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --manifests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	operator-manifest-tools pinning pin -a ~/.config/containers/auth.json bundle/manifests/
 	operator-sdk bundle validate ./bundle
 
 .PHONY: bundle-build
