@@ -1,6 +1,8 @@
 package reconcilers
 
 import (
+	"os"
+
 	corev1 "k8s.io/api/core/v1"
 
 	dbaasv1alpha1 "github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
@@ -40,9 +42,10 @@ const (
 	COCKROACHDB_CHANNEL     = "alpha"
 
 	// DBAAS_DYNAMIC_PLUGIN
-	DBAAS_DYNAMIC_PLUGIN_IMG          = "quay.io/ecosystem-appeng/dbaas-dynamic-plugin:0.1.4"
+	DBAAS_DYNAMIC_PLUGIN_ENV_VAR      = "RELATED_IMAGE_DBAAS_DYNAMIC_PLUGIN"
 	DBAAS_DYNAMIC_PLUGIN_NAME         = "dbaas-dynamic-plugin"
 	DBAAS_DYNAMIC_PLUGIN_DISPLAY_NAME = "OpenShift Database as a Service Dynamic Plugin"
+	// DBAAS_DYNAMIC_PLUGIN_IMG          = "quay.io/ecosystem-appeng/dbaas-dynamic-plugin:0.1.4"
 
 	// CONSOLE_TELEMETRY_PLUGIN
 	CONSOLE_TELEMETRY_PLUGIN_IMG             = "quay.io/ecosystem-appeng/console-telemetry-plugin:0.1.4"
@@ -55,7 +58,7 @@ const (
 var InstallationPlatforms = map[dbaasv1alpha1.PlatformsName]dbaasv1alpha1.PlatformConfig{
 	dbaasv1alpha1.DBaaSDynamicPluginInstallation: {
 		Name:        DBAAS_DYNAMIC_PLUGIN_NAME,
-		Image:       DBAAS_DYNAMIC_PLUGIN_IMG,
+		Image:       os.Getenv(DBAAS_DYNAMIC_PLUGIN_ENV_VAR),
 		DisplayName: DBAAS_DYNAMIC_PLUGIN_DISPLAY_NAME,
 		Type:        dbaasv1alpha1.TypeConsolePlugin,
 	},
