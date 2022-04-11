@@ -14,3 +14,6 @@ images:
 - name: controller
   newName: quay.io/ecosystem-appeng/dbaas-operator
   newTag: v0.1.5
+- name: dbaas-dynamic-plugin
+  newName: quay.io/ecosystem-appeng/dbaas-dynamic-plugin
+  newTag: 0.1.5

@@ -169,7 +169,7 @@ metadata:
     description: Discover & connect with database instances hosted on 3rd-party ISV
       cloud platforms.
     operatorframework.io/suggested-namespace: openshift-dbaas-operator
-    operators.operatorframework.io/builder: operator-sdk-v1.10.0+git
+    operators.operatorframework.io/builder: operator-sdk-v1.18.0+git
     operators.operatorframework.io/internal-objects: '["dbaasconnections.dbaas.redhat.com","dbaasproviders.dbaas.redhat.com","dbaastenants.dbaas.redhat.com","dbaasplatforms.dbaas.redhat.com","dbaasinstances.dbaas.redhat.com"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/RHEcosystemAppEng/dbaas-operator
@@ -412,7 +412,9 @@ spec:
           - create
         serviceAccountName: dbaas-operator-controller-manager
       deployments:
-      - name: dbaas-operator-controller-manager
+      - label:
+          control-plane: controller-manager
+        name: dbaas-operator-controller-manager
         spec:
           replicas: 1
           selector:
@@ -455,6 +457,8 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.namespace
+                - name: RELATED_IMAGE_DBAAS_DYNAMIC_PLUGIN
+                  value: quay.io/ecosystem-appeng/dbaas-dynamic-plugin:0.1.4
                 image: quay.io/ecosystem-appeng/dbaas-operator:v0.1.5
                 imagePullPolicy: Always
                 livenessProbe:
@@ -547,6 +551,9 @@ spec:
   provider:
     name: Red Hat
     url: https://www.redhat.com
+  relatedImages:
+  - image: quay.io/ecosystem-appeng/dbaas-dynamic-plugin:0.1.4
+    name: dbaas-dynamic-plugin
   replaces: dbaas-operator.v0.1.4
   version: 0.1.5
   webhookdefinitions:
@@ -589,3 +596,23 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaasinventory
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: dbaas-operator-controller-manager
+    failurePolicy: Fail
+    generateName: vdbaastenant.kb.io
+    rules:
+    - apiGroups:
+      - dbaas.redhat.com
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - dbaastenants
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaastenant
