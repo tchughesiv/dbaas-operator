@@ -172,7 +172,7 @@ metadata:
       cloud platforms.
     operatorframework.io/suggested-namespace: openshift-dbaas-operator
     operators.operatorframework.io/builder: operator-sdk-v1.10.0+git
-    operators.operatorframework.io/internal-objects: '["dbaasconnections.dbaas.redhat.com","dbaasproviders.dbaas.redhat.com","dbaastenants.dbaas.redhat.com","dbaasplatforms.dbaas.redhat.com","dbaasinstances.dbaas.redhat.com"]'
+    operators.operatorframework.io/internal-objects: '["dbaasconnections.dbaas.redhat.com","dbaasproviders.dbaas.redhat.com","dbaasplatforms.dbaas.redhat.com","dbaasinstances.dbaas.redhat.com"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/RHEcosystemAppEng/dbaas-operator
     support: dbaas-alpha-support@redhat.com
@@ -198,7 +198,7 @@ spec:
       name: dbaasinstances.dbaas.redhat.com
       version: v1alpha1
     - description: DBaaSInventory is the Schema for the dbaasinventory API. Inventory
-        objects must be created in a valid Tenant namespace.
+        objects must be created in a valid Config namespace.
       displayName: Provider Account
       kind: DBaaSInventory
       name: dbaasinventories.dbaas.redhat.com

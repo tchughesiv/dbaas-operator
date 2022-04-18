@@ -73,7 +73,7 @@ var _ = Describe("DBaaSConfig Webhook", func() {
 
 		Context("after creating DBaaSConfig of the same inventory namespace", func() {
 			It("should not allow creating DBaaSConfig", func() {
-				testTenant := &DBaaSConfig{
+				testConfig := &DBaaSConfig{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "test-config-1",
 						Namespace: ns.Name,
@@ -81,7 +81,7 @@ var _ = Describe("DBaaSConfig Webhook", func() {
 					Spec: DBaaSConfigSpec{},
 				}
 				By("creating DBaaSConfig")
-				Expect(k8sClient.Create(ctx, testTenant)).Should(MatchError("admission webhook \"vdbaasconfig.kb.io\" denied the request:" +
+				Expect(k8sClient.Create(ctx, testConfig)).Should(MatchError("admission webhook \"vdbaasconfig.kb.io\" denied the request:" +
 					" metadata.Namespace: Invalid value: \"test-namespace\": the namespace test-namespace is already managed by another config"))
 			})
 		})

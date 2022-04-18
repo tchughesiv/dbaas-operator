@@ -50,13 +50,13 @@ var _ webhook.Validator = &DBaaSConfig{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *DBaaSConfig) ValidateCreate() error {
 	dbaasconfiglog.Info("validate create", "name", r.Name)
-	return r.validateTenant()
+	return r.validateConfig()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *DBaaSConfig) ValidateUpdate(old runtime.Object) error {
 	// dbaasconfiglog.Info("validate update", "name", r.Name)
-	// return r.validateTenant()
+	// return r.validateConfig()
 	return nil
 }
 
@@ -66,7 +66,7 @@ func (r *DBaaSConfig) ValidateDelete() error {
 	return nil
 }
 
-func (r *DBaaSConfig) validateTenant() error {
+func (r *DBaaSConfig) validateConfig() error {
 	configsList := DBaaSConfigList{}
 	if err := configWebhookApiClient.List(context.TODO(), &configsList, &client.ListOptions{Namespace: r.Namespace}); err != nil {
 		return err
