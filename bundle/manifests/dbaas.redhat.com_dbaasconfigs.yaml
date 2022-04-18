@@ -32,7 +32,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: DBaaSConfigSpec defines Tenant ...
+            description: DBaaSConfigSpec defines Config ...
             properties:
               allowProvisions:
                 description: Allow provisioning against inventory accounts

@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// DBaaSConfigSpec defines Tenant ...
+// DBaaSConfigSpec defines Config ...
 type DBaaSConfigSpec struct {
 	// Defaults for inventories in this namespace
 	DBaaSInventoryConfigs `json:",inline"`
