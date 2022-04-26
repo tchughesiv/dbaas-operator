@@ -64,33 +64,39 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if getNumActive(req.Name, configList) != 0 {
 		return ctrl.Result{}, nil
 	}
-	cond := &metav1.Condition{
+
+	resQuota := v1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dbaas-" + config.Name,
+			Namespace: config.Namespace,
+		},
+	}
+	controllerutil.CreateOrUpdate(ctx, r.Client, &resQuota, func() error {
+		if err := ctrl.SetControllerReference(&config, &resQuota, r.Scheme); err != nil {
+			return err
+		}
+		resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
+		resQuota.Spec = v1.ResourceQuotaSpec{
+			Hard: v1.ResourceList{
+				v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
+			},
+		}
+		return nil
+	})
+
+	return r.updateStatusCondition(ctx, config, &metav1.Condition{
 		Type:    v1alpha1.DBaaSConfigReadyType,
 		Status:  metav1.ConditionTrue,
 		Reason:  v1alpha1.Ready,
 		Message: v1alpha1.MsgConfigReady,
-	}
-	resQuota := v1.ResourceQuota{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dbaas-" + req.Name,
-			Namespace: req.Namespace,
-		},
-		Spec: v1.ResourceQuotaSpec{
-			Hard: v1.ResourceList{
-				v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
-			},
-		},
-	}
-	resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
-	controllerutil.SetOwnerReference(&config, &resQuota, r.Scheme)
-
-	return r.updateStatusCondition(ctx, config, cond)
+	})
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.DBaaSConfig{}).
+		Owns(&v1.ResourceQuota{}).
 		Complete(r)
 }
 
