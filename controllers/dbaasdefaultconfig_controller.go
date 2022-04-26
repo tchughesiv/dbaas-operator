@@ -111,7 +111,6 @@ func (r *DBaaSDefaultConfigReconciler) createDefaultConfig(ctx context.Context) 
 }
 
 func getDefaultConfig(inventoryNamespace string) v1alpha1.DBaaSConfig {
-	isTrue := true
 	config := v1alpha1.DBaaSConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cluster",
@@ -119,7 +118,6 @@ func getDefaultConfig(inventoryNamespace string) v1alpha1.DBaaSConfig {
 		},
 		Spec: v1alpha1.DBaaSConfigSpec{
 			DBaaSInventoryConfigs: v1alpha1.DBaaSInventoryConfigs{
-				AllowProvisions:      &isTrue,
 				ConnectionNamespaces: []string{"*"},
 			},
 		},

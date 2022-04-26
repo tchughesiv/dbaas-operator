@@ -26,7 +26,7 @@ type DBaaSConfigSpec struct {
 	DBaaSInventoryConfigs `json:",inline"`
 
 	// Make inventories invisible to the dynamic UI plugin
-	DisableInUi *bool `json:"disableInUi,omitempty"`
+	DisableInUi bool `json:"disableInUi,omitempty"`
 	//PreferredInventoryNamespace bool `json:"preferredInventoryNamespace,omitempty"`
 }
 

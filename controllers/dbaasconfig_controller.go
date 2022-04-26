@@ -61,7 +61,7 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		logger.Error(err, "unable to list configs")
 		return ctrl.Result{}, err
 	}
-	if getNumActive(req.Name, configList) != 0 {
+	if getNumActive(config.Name, configList) > 0 {
 		return ctrl.Result{}, nil
 	}
 
@@ -70,19 +70,17 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			Name:      "dbaas-" + config.Name,
 			Namespace: config.Namespace,
 		},
-	}
-	controllerutil.CreateOrUpdate(ctx, r.Client, &resQuota, func() error {
-		if err := ctrl.SetControllerReference(&config, &resQuota, r.Scheme); err != nil {
-			return err
-		}
-		resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
-		resQuota.Spec = v1.ResourceQuotaSpec{
+		Spec: v1.ResourceQuotaSpec{
 			Hard: v1.ResourceList{
 				v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
 			},
-		}
-		return nil
-	})
+		},
+	}
+	resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
+	if err := ctrl.SetControllerReference(&config, &resQuota, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+	controllerutil.CreateOrUpdate(ctx, r.Client, &resQuota, func() error { return nil })
 
 	return r.updateStatusCondition(ctx, config, &metav1.Condition{
 		Type:    v1alpha1.DBaaSConfigReadyType,

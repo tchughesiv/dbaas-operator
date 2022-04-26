@@ -172,19 +172,19 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 }
 
 // Check if provisioning is allowed against an inventory
-func (r *DBaaSReconciler) canProvision(ctx context.Context, namespace string, inventory *v1alpha1.DBaaSInventory) (canProvision bool, err error) {
-	if inventory.Spec.AllowProvisions != nil {
-		canProvision = *inventory.Spec.AllowProvisions
+func (r *DBaaSReconciler) cantProvision(ctx context.Context, namespace string, inventory *v1alpha1.DBaaSInventory) (bool, error) {
+	if inventory.Spec.DisableProvisions {
+		return true, nil
 	} else {
 		config, err := r.getActiveConfig(ctx, namespace)
 		if err != nil {
-			return canProvision, err
+			return false, err
 		}
-		if config.Spec.AllowProvisions != nil {
-			canProvision = *config.Spec.AllowProvisions
+		if config.Spec.DisableProvisions {
+			return true, nil
 		}
 	}
-	return
+	return false, nil
 }
 
 func (r *DBaaSReconciler) reconcileProviderResource(providerName string, DBaaSObject client.Object,
@@ -286,7 +286,8 @@ func (r *DBaaSReconciler) checkInventory(inventoryRef v1alpha1.NamespacedName, D
 	if err != nil {
 		return inventory, validNS, err
 	}
-	_, err = r.canProvision(ctx, DBaaSObject.GetNamespace(), inventory)
+	// what is this check for???
+	_, err = r.cantProvision(ctx, DBaaSObject.GetNamespace(), inventory)
 	if err != nil {
 		return inventory, validNS, err
 	}

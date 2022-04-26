@@ -36,9 +36,6 @@ spec:
           spec:
             description: DBaaSConfigSpec defines Config ...
             properties:
-              allowProvisions:
-                description: Allow provisioning against inventory accounts
-                type: boolean
               connectionNamespaces:
                 description: Namespaces where DBaaSConnections/DBaaSInstances are
                   allowed to reference a config's inventories. Each inventory can
@@ -50,6 +47,9 @@ spec:
                 type: array
               disableInUi:
                 description: Make inventories invisible to the dynamic UI plugin
+                type: boolean
+              disableProvisions:
+                description: Disable provisioning against inventory accounts
                 type: boolean
             type: object
           status:

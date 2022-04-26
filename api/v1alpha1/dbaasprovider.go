@@ -32,8 +32,8 @@ const (
 	DBaaSConfigReadyType            string = "ConfigReady"
 
 	// DBaaS condition reasons
+	//DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 	Ready                       string = "Ready"
-	DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 	DBaaSProviderNotFound       string = "DBaaSProviderNotFound"
 	DBaaSInventoryNotFound      string = "DBaaSInventoryNotFound"
 	DBaaSInventoryNotReady      string = "DBaaSInventoryNotReady"
@@ -42,11 +42,11 @@ const (
 	ProviderParsingError        string = "ProviderParsingError"
 
 	// DBaaS condition messages
+	//MsgConfigNotReady                string = "Another active Config already exists"
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"
 	MsgProviderCRReconcileInProgress string = "DBaaS Provider Custom Resource reconciliation in progress"
 	MsgInventoryNotReady             string = "Inventory discovery not done"
 	MsgConfigReady                   string = "Config is active"
-	MsgConfigNotReady                string = "Another active Config already exists"
 	MsgInvalidNamespace              string = "Invalid connection namespace for the referenced inventory"
 
 	TypeLabelValue    = "credentials"
@@ -132,8 +132,8 @@ type DBaaSInventorySpec struct {
 
 // DBaaSInventoryConfigs configures inventories
 type DBaaSInventoryConfigs struct {
-	// Allow provisioning against inventory accounts
-	AllowProvisions *bool `json:"allowProvisions,omitempty"`
+	// Disable provisioning against inventory accounts
+	DisableProvisions bool `json:"disableProvisions,omitempty"`
 
 	// Namespaces where DBaaSConnections/DBaaSInstances are allowed to reference a config's inventories.
 	// Each inventory can individually override this. Use "*" to allow all namespaces.
