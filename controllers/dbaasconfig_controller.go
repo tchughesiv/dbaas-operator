@@ -20,10 +20,13 @@ import (
 	"context"
 
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // DBaaSConfigReconciler reconciles a DBaaSConfig object
@@ -58,21 +61,28 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		logger.Error(err, "unable to list configs")
 		return ctrl.Result{}, err
 	}
-
+	if getNumActive(req.Name, configList) != 0 {
+		return ctrl.Result{}, nil
+	}
 	cond := &metav1.Condition{
 		Type:    v1alpha1.DBaaSConfigReadyType,
-		Status:  metav1.ConditionFalse,
-		Reason:  v1alpha1.DBaaSConfigNotReady,
-		Message: v1alpha1.MsgConfigNotReady,
+		Status:  metav1.ConditionTrue,
+		Reason:  v1alpha1.Ready,
+		Message: v1alpha1.MsgConfigReady,
 	}
-	if getNumActive(req.Name, configList) == 0 {
-		cond = &metav1.Condition{
-			Type:    v1alpha1.DBaaSConfigReadyType,
-			Status:  metav1.ConditionTrue,
-			Reason:  v1alpha1.Ready,
-			Message: v1alpha1.MsgConfigReady,
-		}
+	resQuota := v1.ResourceQuota{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "dbaas-" + req.Name,
+			Namespace: req.Namespace,
+		},
+		Spec: v1.ResourceQuotaSpec{
+			Hard: v1.ResourceList{
+				v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
+			},
+		},
 	}
+	resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
+	controllerutil.SetOwnerReference(&config, &resQuota, r.Scheme)
 
 	return r.updateStatusCondition(ctx, config, cond)
 }
