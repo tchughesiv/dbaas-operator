@@ -3,3 +3,8 @@ dependencies:
     value:
       packageName: rh-service-binding-operator
       version: ">=1.0.0"
+  - type: olm.gvk
+    value:
+      kind: ResourceQuota
+      version: v1
+      #group: ""

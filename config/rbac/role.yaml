@@ -50,6 +50,22 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - resourcequotas
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - resourcequotas/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
