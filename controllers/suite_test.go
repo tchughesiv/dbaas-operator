@@ -82,19 +82,21 @@ var _ = BeforeSuite(func() {
 	err = operatorframework.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	By("bootstrapping test environment")
-	customApiServerFlags := []string{
-		"--enable-admission-plugins=ResourceQuota",
-	}
-	apiServerFlags := append([]string(nil), envtest.DefaultKubeAPIServerFlags...)
-	apiServerFlags = append(apiServerFlags, customApiServerFlags...)
+	/*
+		By("bootstrapping test environment")
+		customApiServerFlags := []string{
+			"--enable-admission-plugins=ResourceQuota",
+		}
+		apiServerFlags := append([]string(nil), envtest.DefaultKubeAPIServerFlags...)
+		apiServerFlags = append(apiServerFlags, customApiServerFlags...)
+	*/
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("..", "test", "crd"),
 		},
 		ErrorIfCRDPathMissing: true,
-		KubeAPIServerFlags:    apiServerFlags,
+		//	KubeAPIServerFlags:    apiServerFlags,
 	}
 	//args := testEnv.ControlPlane.APIServer.Configure().Enable("enable-admission-plugins")
 	//fmt.Println(args)

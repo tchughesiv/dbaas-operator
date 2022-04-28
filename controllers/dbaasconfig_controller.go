@@ -58,38 +58,53 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, err
 	}
 
+	cond := &metav1.Condition{
+		Type:    v1alpha1.DBaaSConfigReadyType,
+		Status:  metav1.ConditionTrue,
+		Reason:  v1alpha1.Ready,
+		Message: v1alpha1.MsgConfigReady,
+	}
 	configList, err := r.configListByNS(ctx, req.Namespace)
 	if err != nil {
 		logger.Error(err, "unable to list configs")
 		return ctrl.Result{}, err
 	}
-	if getNumActive(config.Name, configList) > 0 {
-		return ctrl.Result{}, nil
-	}
-
-	resQuota := v1.ResourceQuota{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "dbaas-" + config.Name,
-			Namespace: config.Namespace,
-		},
-		Spec: v1.ResourceQuotaSpec{
-			Hard: v1.ResourceList{
-				v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
+	if getNumActive(configList) > 0 {
+		cond = &metav1.Condition{
+			Type:    v1alpha1.DBaaSConfigReadyType,
+			Status:  metav1.ConditionFalse,
+			Reason:  v1alpha1.DBaaSConfigNotReady,
+			Message: v1alpha1.MsgConfigNotReady,
+		}
+	} else {
+		resQuota := v1.ResourceQuota{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "dbaas-" + config.Name,
+				Namespace: config.Namespace,
 			},
-		},
+			Spec: v1.ResourceQuotaSpec{
+				Hard: v1.ResourceList{
+					v1.ResourceName("count/dbaasconfigs." + v1alpha1.GroupVersion.Group): resource.MustParse("1"),
+				},
+			},
+		}
+		resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
+		if err := ctrl.SetControllerReference(&config, &resQuota, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+		if res, err := controllerutil.CreateOrUpdate(ctx, r.Client, &resQuota, func() error { return nil }); err != nil {
+			if errors.IsConflict(err) {
+				logger.V(1).Info("ResourceQuota resource modified, retry syncing status", "ResourceQuota", resQuota)
+				return ctrl.Result{Requeue: true}, err
+			}
+			logger.Error(err, "Error updating the ResourceQuota resource status", "ResourceQuota", resQuota)
+			return ctrl.Result{}, err
+		} else if res != controllerutil.OperationResultNone {
+			logger.Info("ResourceQuota resource reconciled", "ResourceQuota", resQuota, "result", res)
+		}
 	}
-	resQuota.SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("ResourceQuota"))
-	if err := ctrl.SetControllerReference(&config, &resQuota, r.Scheme); err != nil {
-		return ctrl.Result{}, err
-	}
-	controllerutil.CreateOrUpdate(ctx, r.Client, &resQuota, func() error { return nil })
 
-	return r.updateStatusCondition(ctx, config, &metav1.Condition{
-		Type:    v1alpha1.DBaaSConfigReadyType,
-		Status:  metav1.ConditionTrue,
-		Reason:  v1alpha1.Ready,
-		Message: v1alpha1.MsgConfigReady,
-	})
+	return r.updateStatusCondition(ctx, config, cond)
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -114,10 +129,9 @@ func (r *DBaaSConfigReconciler) updateStatusCondition(ctx context.Context, confi
 	return ctrl.Result{}, nil
 }
 
-func getNumActive(name string, configList v1alpha1.DBaaSConfigList) (numActive int) {
+func getNumActive(configList v1alpha1.DBaaSConfigList) (numActive int) {
 	for i := range configList.Items {
-		if name != configList.Items[i].Name &&
-			apimeta.IsStatusConditionTrue(configList.Items[i].Status.Conditions, v1alpha1.DBaaSConfigReadyType) {
+		if apimeta.IsStatusConditionTrue(configList.Items[i].Status.Conditions, v1alpha1.DBaaSConfigReadyType) {
 			numActive += 1
 		}
 	}

@@ -222,6 +222,9 @@ func assertDBaaSResourceStatusUpdated(object client.Object, status metav1.Condit
 			case *v1alpha1.DBaaSInstance:
 				dbaasConds, _ := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSInstanceReadyType)
 				return len(dbaasConds) > 0 && dbaasConds[0].Status == status && dbaasConds[0].Reason == reason, nil
+			case *v1alpha1.DBaaSConfig:
+				dbaasConds, _ := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSConfigReadyType)
+				return len(dbaasConds) > 0 && dbaasConds[0].Status == status && dbaasConds[0].Reason == reason, nil
 			default:
 				Fail("invalid test object")
 				return false, err

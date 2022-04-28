@@ -32,7 +32,6 @@ const (
 	DBaaSConfigReadyType            string = "ConfigReady"
 
 	// DBaaS condition reasons
-	//DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 	Ready                       string = "Ready"
 	DBaaSProviderNotFound       string = "DBaaSProviderNotFound"
 	DBaaSInventoryNotFound      string = "DBaaSInventoryNotFound"
@@ -40,14 +39,15 @@ const (
 	DBaaSInvalidNamespace       string = "InvalidNamespace"
 	ProviderReconcileInprogress string = "ProviderReconcileInprogress"
 	ProviderParsingError        string = "ProviderParsingError"
+	DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 
 	// DBaaS condition messages
-	//MsgConfigNotReady                string = "Another active Config already exists"
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"
 	MsgProviderCRReconcileInProgress string = "DBaaS Provider Custom Resource reconciliation in progress"
 	MsgInventoryNotReady             string = "Inventory discovery not done"
 	MsgConfigReady                   string = "Config is active"
 	MsgInvalidNamespace              string = "Invalid connection namespace for the referenced inventory"
+	MsgConfigNotReady                string = "Another active Config already exists"
 
 	TypeLabelValue    = "credentials"
 	TypeLabelKey      = "db-operator/type"
