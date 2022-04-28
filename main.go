@@ -168,10 +168,6 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSInventory")
 			os.Exit(1)
 		}
-		if err = (&v1alpha1.DBaaSConfig{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSConfig")
-			os.Exit(1)
-		}
 	}
 	if err = (&controllers.DBaaSConfigReconciler{
 		DBaaSReconciler: DBaaSReconciler,
