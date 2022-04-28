@@ -33,13 +33,13 @@ const (
 
 	// DBaaS condition reasons
 	Ready                       string = "Ready"
+	DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 	DBaaSProviderNotFound       string = "DBaaSProviderNotFound"
 	DBaaSInventoryNotFound      string = "DBaaSInventoryNotFound"
 	DBaaSInventoryNotReady      string = "DBaaSInventoryNotReady"
 	DBaaSInvalidNamespace       string = "InvalidNamespace"
 	ProviderReconcileInprogress string = "ProviderReconcileInprogress"
 	ProviderParsingError        string = "ProviderParsingError"
-	DBaaSConfigNotReady         string = "DBaaSConfigNotReady"
 
 	// DBaaS condition messages
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"

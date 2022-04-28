@@ -5,6 +5,6 @@ dependencies:
       version: ">=1.0.0"
   - type: olm.gvk
     value:
-      kind: ResourceQuota
+      group: core
       version: v1
-      #group: ""
+      kind: ResourceQuota
