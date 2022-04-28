@@ -57,13 +57,13 @@ func (r *DBaaSConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		logger.Error(err, "Error fetching DBaaS Config for reconcile")
 		return ctrl.Result{}, err
 	}
-
 	cond := &metav1.Condition{
 		Type:    v1alpha1.DBaaSConfigReadyType,
 		Status:  metav1.ConditionTrue,
 		Reason:  v1alpha1.Ready,
 		Message: v1alpha1.MsgConfigReady,
 	}
+
 	configList, err := r.configListByNS(ctx, req.Namespace)
 	if err != nil {
 		logger.Error(err, "unable to list configs")

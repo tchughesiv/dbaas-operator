@@ -215,13 +215,9 @@ var _ = Describe("list configs by inventory namespace", func() {
 	config2.Name = "test-config-1"
 	config3 := getDefaultConfig(ns.Name)
 	config3.Name = "test-config-2"
-
 	BeforeEach(assertResourceCreationIfNotExists(&config1))
 	BeforeEach(assertResourceCreationIfNotExists(&config2))
 	BeforeEach(assertResourceCreationIfNotExists(&config3))
-	//AfterEach(assertResourceDeletion(&config1))
-	//AfterEach(assertResourceDeletion(&config2))
-	//AfterEach(assertResourceDeletion(&config3))
 
 	Context("after creating DBaaSConfigs", func() {
 		It("has a true status", assertDBaaSResourceStatusUpdated(&config1, metav1.ConditionTrue, v1alpha1.Ready))
@@ -235,13 +231,9 @@ var _ = Describe("list configs by inventory namespace", func() {
 			numActive := getNumActive(configList)
 			Expect(numActive).Should(Equal(1))
 
-			for _, config := range configList.Items {
-				if apimeta.IsStatusConditionTrue(config.Status.Conditions, v1alpha1.DBaaSConfigReadyType) {
-					checkConfig, err := dRec.getActiveConfig(ctx, config.Namespace)
-					Expect(err).NotTo(HaveOccurred())
-					Expect(config).Should(Equal(checkConfig))
-				}
-			}
+			checkConfig, err := dRec.getActiveConfig(ctx, ns.Name)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(config1).Should(Equal(checkConfig))
 
 			cannotProvision, err := dRec.cannotProvision(ctx, ns.Name, &v1alpha1.DBaaSInventory{})
 			Expect(err).NotTo(HaveOccurred())

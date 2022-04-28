@@ -27,7 +27,6 @@ type DBaaSConfigSpec struct {
 
 	// Make inventories invisible to the dynamic UI plugin
 	DisableInUi bool `json:"disableInUi,omitempty"`
-	//PreferredInventoryNamespace bool `json:"preferredInventoryNamespace,omitempty"`
 }
 
 // DBaaSConfigStatus defines the observed state of DBaaSConfig
@@ -37,6 +36,8 @@ type DBaaSConfigStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Active",type=string,JSONPath=`.status.conditions[0].status`
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 //+operator-sdk:csv:customresourcedefinitions:displayName="DBaaSConfig"
 // DBaaSConfig is the Schema for the dbaasconfigs API
