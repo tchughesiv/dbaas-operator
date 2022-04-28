@@ -220,9 +220,10 @@ var _ = Describe("list configs by inventory namespace", func() {
 	BeforeEach(assertResourceCreationIfNotExists(&config3))
 
 	Context("after creating DBaaSConfigs", func() {
-		It("has a true status", assertDBaaSResourceStatusUpdated(&config1, metav1.ConditionTrue, v1alpha1.Ready))
-		It("has a false status", assertDBaaSResourceStatusUpdated(&config2, metav1.ConditionFalse, v1alpha1.DBaaSConfigNotReady))
-		It("has a false status", assertDBaaSResourceStatusUpdated(&config3, metav1.ConditionFalse, v1alpha1.DBaaSConfigNotReady))
+		BeforeEach(assertDBaaSResourceStatusUpdated(&config1, metav1.ConditionTrue, v1alpha1.Ready))
+		BeforeEach(assertDBaaSResourceStatusUpdated(&config2, metav1.ConditionFalse, v1alpha1.DBaaSConfigNotReady))
+		BeforeEach(assertDBaaSResourceStatusUpdated(&config3, metav1.ConditionFalse, v1alpha1.DBaaSConfigNotReady))
+
 		It("should return all the created configs", func() {
 			configList, err := dRec.configListByNS(ctx, ns.Name)
 			Expect(err).NotTo(HaveOccurred())
@@ -233,7 +234,7 @@ var _ = Describe("list configs by inventory namespace", func() {
 
 			checkConfig, err := dRec.getActiveConfig(ctx, ns.Name)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(config1).Should(Equal(checkConfig))
+			Expect(checkConfig.Name).Should(Equal(config1.Name))
 
 			cannotProvision, err := dRec.cannotProvision(ctx, ns.Name, &v1alpha1.DBaaSInventory{})
 			Expect(err).NotTo(HaveOccurred())
