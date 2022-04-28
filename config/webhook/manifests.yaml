@@ -12,26 +12,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-dbaas-redhat-com-v1alpha1-dbaasconfig
-  failurePolicy: Fail
-  name: vdbaasconfig.kb.io
-  rules:
-  - apiGroups:
-    - dbaas.redhat.com
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - dbaasconfigs
-  sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
       path: /validate-dbaas-redhat-com-v1alpha1-dbaasconnection
   failurePolicy: Fail
   name: vdbaasconnection.kb.io
