@@ -210,7 +210,9 @@ var _ = Describe("list configs by inventory namespace", func() {
 		},
 	}
 	BeforeEach(assertResourceCreationIfNotExists(ns))
+
 	config1 := getDefaultConfig(ns.Name)
+	config1.Spec.DisableProvisions = true
 	config2 := getDefaultConfig(ns.Name)
 	config2.Name = "test-config-1"
 	config3 := getDefaultConfig(ns.Name)
@@ -236,7 +238,20 @@ var _ = Describe("list configs by inventory namespace", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(checkConfig.Name).Should(Equal(config1.Name))
 
-			cannotProvision, err := dRec.cannotProvision(ctx, ns.Name, &v1alpha1.DBaaSInventory{})
+			resQuota := corev1.ResourceQuota{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "dbaas-" + checkConfig.Name,
+					Namespace: checkConfig.Namespace,
+				},
+			}
+			err = dRec.Get(ctx, client.ObjectKeyFromObject(&resQuota), &resQuota)
+			Expect(err).NotTo(HaveOccurred())
+
+			cannotProvision, err := dRec.cannotProvision(ctx, &v1alpha1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: ns.Name}})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cannotProvision).Should(BeTrue())
+
+			cannotProvision, err = dRec.cannotProvision(ctx, &v1alpha1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: "default"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cannotProvision).Should(BeFalse())
 		})

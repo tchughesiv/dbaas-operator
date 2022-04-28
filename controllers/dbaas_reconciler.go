@@ -172,11 +172,11 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 }
 
 // Check if provisioning is allowed against an inventory
-func (r *DBaaSReconciler) cannotProvision(ctx context.Context, namespace string, inventory *v1alpha1.DBaaSInventory) (bool, error) {
+func (r *DBaaSReconciler) cannotProvision(ctx context.Context, inventory *v1alpha1.DBaaSInventory) (bool, error) {
 	if inventory.Spec.DisableProvisions {
 		return true, nil
 	} else {
-		config, err := r.getActiveConfig(ctx, namespace)
+		config, err := r.getActiveConfig(ctx, inventory.Namespace)
 		if err != nil {
 			return false, err
 		}
@@ -287,7 +287,7 @@ func (r *DBaaSReconciler) checkInventory(inventoryRef v1alpha1.NamespacedName, D
 		return inventory, validNS, err
 	}
 	// what is this check for???
-	_, err = r.cannotProvision(ctx, DBaaSObject.GetNamespace(), inventory)
+	_, err = r.cannotProvision(ctx, inventory)
 	if err != nil {
 		return inventory, validNS, err
 	}
