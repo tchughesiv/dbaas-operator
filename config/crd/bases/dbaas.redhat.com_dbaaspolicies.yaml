@@ -47,15 +47,19 @@ spec:
               and sets default inventory policy. Policy defaults can be overridden
               on a per-inventory basis.
             properties:
-              connectionNamespaces:
-                description: Namespaces where DBaaSConnections/DBaaSInstances are
-                  allowed to reference a policy's inventories. Each inventory can
-                  individually override this. Use "*" to allow all namespaces. If
-                  not set in either the policy or inventory object, connections will
-                  only be allowed in the inventory's namespace.
-                items:
-                  type: string
-                type: array
+              connections:
+                description: DBaaSConnectionPolicy sets connection policy
+                properties:
+                  list:
+                    description: Namespaces where DBaaSConnections/DBaaSInstances
+                      are allowed to reference a policy's inventories. Each inventory
+                      can individually override this. Use "*" to allow all namespaces.
+                      If not set in either the policy or inventory object, connections
+                      will only be allowed in the inventory's namespace.
+                    items:
+                      type: string
+                    type: array
+                type: object
               disableProvisions:
                 description: Disable provisioning against inventory accounts
                 type: boolean

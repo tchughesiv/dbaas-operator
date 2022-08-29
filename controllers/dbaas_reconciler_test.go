@@ -258,9 +258,11 @@ var _ = Describe("list policies by inventory namespace", func() {
 			Expect(canProvision(inventory, activePolicy)).Should(BeFalse())
 
 			// override policy setting
-			isFalse := false
-			inventory.Spec.DisableProvisions = &isFalse
+			inventory.Spec.Policy = &v1alpha1.DBaaSInventoryPolicy{}
 			Expect(canProvision(inventory, activePolicy)).Should(BeTrue())
+
+			inventory.Spec.Policy.DisableProvisions = &isTrue
+			Expect(canProvision(inventory, activePolicy)).Should(BeFalse())
 
 			// check nil policy
 			Expect(canProvision(inventory, nil)).Should(BeFalse())

@@ -29,7 +29,7 @@ type DBaaSOperatorInventorySpec struct {
 	DBaaSInventorySpec `json:",inline"`
 
 	// The policy for this inventory
-	DBaaSInventoryPolicy `json:",inline"`
+	Policy *DBaaSInventoryPolicy `json:"policy,omitempty"`
 }
 
 //+kubebuilder:object:root=true

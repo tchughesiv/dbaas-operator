@@ -118,7 +118,9 @@ func getDefaultPolicy(inventoryNamespace string) v1alpha1.DBaaSPolicy {
 		},
 		Spec: v1alpha1.DBaaSPolicySpec{
 			DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-				ConnectionNamespaces: []string{"*"},
+				Connections: &v1alpha1.DBaaSConnectionPolicy{
+					AllowedNamespaces: []string{"*"},
+				},
 			},
 		},
 	}

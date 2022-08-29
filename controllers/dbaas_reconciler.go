@@ -116,14 +116,20 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 	if namespace == inventory.Namespace {
 		return true, nil
 	}
-	validNamespaces := inventory.Spec.ConnectionNamespaces
-	if len(validNamespaces) == 0 {
-		policyList, err := r.policyListByNS(ctx, inventory.Namespace)
-		if err != nil {
-			return false, err
-		}
-		for _, policy := range policyList.Items {
-			validNamespaces = append(validNamespaces, policy.Spec.ConnectionNamespaces...)
+
+	validNamespaces := []string{}
+	if inventory.Spec.Policy != nil && inventory.Spec.Policy.Connections != nil {
+		validNamespaces = inventory.Spec.Policy.Connections.AllowedNamespaces
+		if len(validNamespaces) == 0 {
+			policyList, err := r.policyListByNS(ctx, inventory.Namespace)
+			if err != nil {
+				return false, err
+			}
+			for _, policy := range policyList.Items {
+				if policy.Spec.Connections != nil {
+					validNamespaces = append(validNamespaces, policy.Spec.Connections.AllowedNamespaces...)
+				}
+			}
 		}
 	}
 	// valid if all namespaces are supported via wildcard
@@ -139,8 +145,12 @@ func canProvision(inventory v1alpha1.DBaaSInventory, activePolicy *v1alpha1.DBaa
 		// not an active namespace
 		return false
 	}
-	if inventory.Spec.DisableProvisions != nil {
-		return !*inventory.Spec.DisableProvisions
+	if inventory.Spec.Policy != nil {
+		if inventory.Spec.Policy.DisableProvisions != nil {
+			return !*inventory.Spec.Policy.DisableProvisions
+		} else {
+			return true
+		}
 	}
 	if activePolicy.Spec.DisableProvisions != nil {
 		return !*activePolicy.Spec.DisableProvisions

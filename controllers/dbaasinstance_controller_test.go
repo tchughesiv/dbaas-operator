@@ -140,8 +140,10 @@ var _ = Describe("DBaaSInstance controller with errors", func() {
 				ProviderRef: v1alpha1.NamespacedName{
 					Name: testProviderName,
 				},
-				DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-					ConnectionNamespaces: []string{"valid-ns", "random"},
+				Policy: &v1alpha1.DBaaSInventoryPolicy{
+					Connections: &v1alpha1.DBaaSConnectionPolicy{
+						AllowedNamespaces: []string{"valid-ns", "random"},
+					},
 				},
 				DBaaSInventorySpec: *DBaaSInventorySpec,
 			},
@@ -338,8 +340,10 @@ var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 					ProviderRef: v1alpha1.NamespacedName{
 						Name: testProviderName,
 					},
-					DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-						ConnectionNamespaces: []string{otherNS.Name},
+					Policy: &v1alpha1.DBaaSInventoryPolicy{
+						Connections: &v1alpha1.DBaaSConnectionPolicy{
+							AllowedNamespaces: []string{otherNS.Name},
+						},
 					},
 					DBaaSInventorySpec: v1alpha1.DBaaSInventorySpec{
 						CredentialsRef: &v1alpha1.LocalObjectReference{
@@ -452,8 +456,10 @@ var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 					ProviderRef: v1alpha1.NamespacedName{
 						Name: testProviderName,
 					},
-					DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-						ConnectionNamespaces: []string{"*"},
+					Policy: &v1alpha1.DBaaSInventoryPolicy{
+						Connections: &v1alpha1.DBaaSConnectionPolicy{
+							AllowedNamespaces: []string{"*"},
+						},
 					},
 					DBaaSInventorySpec: v1alpha1.DBaaSInventorySpec{
 						CredentialsRef: &v1alpha1.LocalObjectReference{
@@ -567,9 +573,11 @@ var _ = Describe("DBaaSInstance controller - valid dev namespaces", func() {
 					ProviderRef: v1alpha1.NamespacedName{
 						Name: testProviderName,
 					},
-					DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-						ConnectionNamespaces: []string{"*"},
-						DisableProvisions:    &isTrue,
+					Policy: &v1alpha1.DBaaSInventoryPolicy{
+						Connections: &v1alpha1.DBaaSConnectionPolicy{
+							AllowedNamespaces: []string{"*"},
+						},
+						DisableProvisions: &isTrue,
 					},
 					DBaaSInventorySpec: v1alpha1.DBaaSInventorySpec{
 						CredentialsRef: &v1alpha1.LocalObjectReference{
