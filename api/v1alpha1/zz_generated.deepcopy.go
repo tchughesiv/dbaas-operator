@@ -334,8 +334,23 @@ func (in *DBaaSInventoryPolicy) DeepCopyInto(out *DBaaSInventoryPolicy) {
 	}
 	if in.ConnectionNamespaces != nil {
 		in, out := &in.ConnectionNamespaces, &out.ConnectionNamespaces
-		*out = make([]string, len(*in))
-		copy(*out, *in)
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
+	if in.ConnectionNsSelectors != nil {
+		in, out := &in.ConnectionNsSelectors, &out.ConnectionNsSelectors
+		*out = new(map[string]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make(map[string]string, len(*in))
+			for key, val := range *in {
+				(*out)[key] = val
+			}
+		}
 	}
 }
 

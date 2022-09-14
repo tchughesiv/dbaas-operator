@@ -16,8 +16,10 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -116,19 +118,48 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 	if namespace == inventory.Namespace {
 		return true, nil
 	}
-	validNamespaces := inventory.Spec.ConnectionNamespaces
-	if len(validNamespaces) == 0 {
-		policyList, err := r.policyListByNS(ctx, inventory.Namespace)
-		if err != nil {
-			return false, err
+	var validNamespaces []string
+	var validNsSelectors map[string]string
+	policyList, err := r.policyListByNS(ctx, inventory.Namespace)
+	if err != nil {
+		return false, err
+	}
+	if policy := getActivePolicy(policyList); policy != nil {
+		if policy.Spec.ConnectionNamespaces != nil {
+			validNamespaces = *policy.Spec.ConnectionNamespaces
 		}
-		for _, policy := range policyList.Items {
-			validNamespaces = append(validNamespaces, policy.Spec.ConnectionNamespaces...)
+		if policy.Spec.ConnectionNsSelectors != nil {
+			validNsSelectors = *policy.Spec.ConnectionNsSelectors
 		}
 	}
+	if inventory.Spec.ConnectionNamespaces != nil {
+		validNamespaces = *inventory.Spec.ConnectionNamespaces
+	}
+	if inventory.Spec.ConnectionNsSelectors != nil {
+		validNsSelectors = *inventory.Spec.ConnectionNsSelectors
+	}
+
 	// valid if all namespaces are supported via wildcard
 	if contains(validNamespaces, "*") {
 		return true, nil
+	}
+
+	selector := labels.NewSelector()
+	for key, value := range validNsSelectors {
+		nsReq, err := labels.NewRequirement(key, selection.Equals, []string{value})
+		if err != nil {
+			return false, err
+		}
+		selector = selector.Add(*nsReq)
+	}
+	if !selector.Empty() {
+		var selNS corev1.NamespaceList
+		if err := r.List(ctx, &selNS, &client.ListOptions{LabelSelector: selector}); err != nil {
+			return false, err
+		}
+		for _, ns := range selNS.Items {
+			validNamespaces = append(validNamespaces, ns.Name)
+		}
 	}
 	return contains(validNamespaces, namespace), nil
 }

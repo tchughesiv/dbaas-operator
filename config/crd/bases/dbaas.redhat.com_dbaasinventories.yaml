@@ -47,6 +47,13 @@ spec:
                 items:
                   type: string
                 type: array
+              connectionNsSelectors:
+                additionalProperties:
+                  type: string
+                description: Use label selectors to determine namespaces where DBaaSConnections/DBaaSInstances
+                  are allowed to reference a policy's inventories. Each inventory
+                  can individually override this.
+                type: object
               credentialsRef:
                 description: The Secret containing the provider-specific connection
                   credentials to use with its API endpoint. The format of the Secret

@@ -34,7 +34,11 @@ type DBaaSInventoryPolicy struct {
 	// Namespaces where DBaaSConnections/DBaaSInstances are allowed to reference a policy's inventories.
 	// Each inventory can individually override this. Use "*" to allow all namespaces.
 	// If not set in either the policy or inventory object, connections will only be allowed in the inventory's namespace.
-	ConnectionNamespaces []string `json:"connectionNamespaces,omitempty"`
+	ConnectionNamespaces *[]string `json:"connectionNamespaces,omitempty"`
+
+	// Use label selectors to determine namespaces where DBaaSConnections/DBaaSInstances are allowed to reference a policy's inventories.
+	// Each inventory can individually override this.
+	ConnectionNsSelectors *map[string]string `json:"connectionNsSelectors,omitempty"`
 }
 
 // DBaaSPolicyStatus defines the observed state of DBaaSPolicy
