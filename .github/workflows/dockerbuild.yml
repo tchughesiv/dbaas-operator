@@ -7,6 +7,7 @@ on:
     - release-*
 
 env:
+  REGISTRY: quay.io
   REGISTRY_ORG: tchughesiv
 
 jobs:
@@ -16,14 +17,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Log in to Quay.io
-      uses: redhat-actions/podman-login@v1
-      id: quay-login
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        registry: quay.io
 
     - name: Image build
       uses: redhat-actions/buildah-build@v2
@@ -35,11 +28,19 @@ jobs:
         containerfiles: |
           ./Dockerfile
 
+    - name: Log in to ${{ env.REGISTRY }}
+      uses: redhat-actions/podman-login@v1
+      id: quay-login
+      with:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ env.REGISTRY }}
+
     - name: Image push
       uses: redhat-actions/push-to-registry@v2
       id: push-to-quay
       with:
-        registry: ${{ steps.quay-login.outputs.registry }}/${{ env.REGISTRY_ORG }}
+        registry: ${{ env.REGISTRY }}/${{ env.REGISTRY_ORG }}
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
 
