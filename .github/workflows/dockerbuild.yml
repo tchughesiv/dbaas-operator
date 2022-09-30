@@ -12,6 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: "quay push"
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -21,7 +22,7 @@ jobs:
       id: quay-login
       with:
         username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWOR }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
         registry: quay.io
 
     - name: Image build
