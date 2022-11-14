@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	dbaasv1alpha1 "github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	dbaasv1beta1 "github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 )
 
 const (
@@ -100,10 +100,10 @@ func PlatformInstallStart() Execution {
 }
 
 // PlatformStackInstallationMetric is used to log duration and success/failure
-func (e *Execution) PlatformStackInstallationMetric(platform *dbaasv1alpha1.DBaaSPlatform, version string) {
+func (e *Execution) PlatformStackInstallationMetric(platform *dbaasv1beta1.DBaaSPlatform, version string) {
 	duration := time.Since(e.begin)
 	for _, cond := range platform.Status.Conditions {
-		if cond.Type == dbaasv1alpha1.DBaaSPlatformReadyType {
+		if cond.Type == dbaasv1beta1.DBaaSPlatformReadyType {
 			lastTransitionTime := cond.LastTransitionTime
 			duration = lastTransitionTime.Sub(platform.CreationTimestamp.Time)
 			DBaasStackInstallationHistogram.With(prometheus.Labels{MetricLabelVersion: version, MetricLabelCreationTimestamp: platform.CreationTimestamp.String()}).Observe(duration.Seconds())
@@ -114,31 +114,31 @@ func (e *Execution) PlatformStackInstallationMetric(platform *dbaasv1alpha1.DBaa
 }
 
 // SetPlatformStatusMetric exposes dbaas_platform_status Metric for each platform
-func SetPlatformStatusMetric(platformName dbaasv1alpha1.PlatformsName, status dbaasv1alpha1.PlatformsInstlnStatus, version string) {
+func SetPlatformStatusMetric(platformName dbaasv1beta1.PlatformName, status dbaasv1beta1.PlatformInstlnStatus, version string) {
 	if len(platformName) > 0 {
 		switch status {
 
-		case dbaasv1alpha1.ResultFailed:
+		case dbaasv1beta1.ResultFailed:
 			DBaasPlatformInstallationGauge.With(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(status), MetricLabelVersion: version}).Set(float64(0))
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultSuccess), MetricLabelVersion: version})
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultInProgress), MetricLabelVersion: version})
-		case dbaasv1alpha1.ResultSuccess:
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultInProgress), MetricLabelVersion: version})
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultFailed), MetricLabelVersion: version})
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultSuccess), MetricLabelVersion: version})
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultInProgress), MetricLabelVersion: version})
+		case dbaasv1beta1.ResultSuccess:
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultInProgress), MetricLabelVersion: version})
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultFailed), MetricLabelVersion: version})
 			DBaasPlatformInstallationGauge.With(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(status), MetricLabelVersion: version}).Set(float64(1))
-		case dbaasv1alpha1.ResultInProgress:
+		case dbaasv1beta1.ResultInProgress:
 			DBaasPlatformInstallationGauge.With(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(status), MetricLabelVersion: version}).Set(float64(2))
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultSuccess), MetricLabelVersion: version})
-			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultFailed), MetricLabelVersion: version})
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultSuccess), MetricLabelVersion: version})
+			DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultFailed), MetricLabelVersion: version})
 
 		}
 	}
 }
 
 // CleanPlatformStatusMetric delete the dbaas_platform_status Metric for each platform
-func CleanPlatformStatusMetric(platformName dbaasv1alpha1.PlatformsName, status dbaasv1alpha1.PlatformsInstlnStatus, version string) {
-	if len(platformName) > 0 && status == dbaasv1alpha1.ResultSuccess {
-		DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1alpha1.ResultSuccess), MetricLabelVersion: version})
+func CleanPlatformStatusMetric(platformName dbaasv1beta1.PlatformName, status dbaasv1beta1.PlatformInstlnStatus, version string) {
+	if len(platformName) > 0 && status == dbaasv1beta1.ResultSuccess {
+		DBaasPlatformInstallationGauge.Delete(prometheus.Labels{MetricLabelName: string(platformName), MetricLabelStatus: string(dbaasv1beta1.ResultSuccess), MetricLabelVersion: version})
 	}
 }
 
