@@ -150,7 +150,7 @@ $(ENVTEST): $(LOCALBIN)
 
 .PHONY: test
 test: sdk-manifests vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.tmp.out -covermode count
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" TEST_RUN=true go test ./... -coverprofile cover.tmp.out -covermode count
 
 .PHONY: coverage
 coverage: test

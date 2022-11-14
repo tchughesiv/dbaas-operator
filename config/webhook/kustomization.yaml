@@ -1,3 +1,5 @@
+namePrefix: v1beta1-
+
 resources:
 - manifests.yaml
 - service.yaml

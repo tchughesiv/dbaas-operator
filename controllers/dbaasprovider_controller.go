@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 )
 
 // DBaaSProviderReconciler reconciles a DBaaSProvider object
@@ -49,7 +49,7 @@ type DBaaSProviderReconciler struct {
 func (r *DBaaSProviderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := ctrl.LoggerFrom(ctx)
 
-	var provider v1alpha1.DBaaSProvider
+	var provider v1beta1.DBaaSProvider
 	if err := r.Get(ctx, req.NamespacedName, &provider); err != nil {
 		if errors.IsNotFound(err) {
 			// CR deleted since request queued, child objects getting GC'd, no requeue
@@ -60,19 +60,19 @@ func (r *DBaaSProviderReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
-	if err := r.watchDBaaSProviderObject(r.InventoryCtrl, &v1alpha1.DBaaSInventory{}, provider.Spec.InventoryKind); err != nil {
+	if err := r.watchDBaaSProviderObject(r.InventoryCtrl, &v1beta1.DBaaSInventory{}, provider.Spec.InventoryKind); err != nil {
 		logger.Error(err, "Error watching Provider Inventory CR", "Kind", provider.Spec.InventoryKind)
 		return ctrl.Result{}, err
 	}
 	logger.Info("Watching Provider Inventory CR", "Kind", provider.Spec.InventoryKind)
 
-	if err := r.watchDBaaSProviderObject(r.ConnectionCtrl, &v1alpha1.DBaaSConnection{}, provider.Spec.ConnectionKind); err != nil {
+	if err := r.watchDBaaSProviderObject(r.ConnectionCtrl, &v1beta1.DBaaSConnection{}, provider.Spec.ConnectionKind); err != nil {
 		logger.Error(err, "Error watching Provider Connection CR", "Kind", provider.Spec.ConnectionKind)
 		return ctrl.Result{}, err
 	}
 	logger.Info("Watching Provider Connection CR", "Kind", provider.Spec.ConnectionKind)
 
-	if err := r.watchDBaaSProviderObject(r.InstanceCtrl, &v1alpha1.DBaaSInstance{}, provider.Spec.InstanceKind); err != nil {
+	if err := r.watchDBaaSProviderObject(r.InstanceCtrl, &v1beta1.DBaaSInstance{}, provider.Spec.InstanceKind); err != nil {
 		logger.Error(err, "Error watching Provider Instance CR", "Kind", provider.Spec.InstanceKind)
 		return ctrl.Result{}, err
 	}
@@ -84,7 +84,7 @@ func (r *DBaaSProviderReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 // SetupWithManager sets up the controller with the Manager.
 func (r *DBaaSProviderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.DBaaSProvider{}, builder.WithPredicates(filterEventPredicate)).
+		For(&v1beta1.DBaaSProvider{}, builder.WithPredicates(filterEventPredicate)).
 		Complete(r)
 }
 

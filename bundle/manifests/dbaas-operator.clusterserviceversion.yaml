@@ -5,7 +5,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "apiVersion": "dbaas.redhat.com/v1beta1",
           "kind": "DBaaSConnection",
           "metadata": {
             "name": "dbaasconnection-sample"
@@ -19,7 +19,7 @@ metadata:
           }
         },
         {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "apiVersion": "dbaas.redhat.com/v1beta1",
           "kind": "DBaaSInstance",
           "metadata": {
             "name": "dbaasinstance-sample"
@@ -39,10 +39,10 @@ metadata:
           }
         },
         {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "apiVersion": "dbaas.redhat.com/v1beta1",
           "kind": "DBaaSInventory",
           "metadata": {
-            "name": "atlas-inventory"
+            "name": "dbaasinventory-sample"
           },
           "spec": {
             "credentialsRef": {
@@ -54,7 +54,7 @@ metadata:
           }
         },
         {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "apiVersion": "dbaas.redhat.com/v1beta1",
           "kind": "DBaaSPlatform",
           "metadata": {
             "name": "dbaasplatform-sample"
@@ -64,7 +64,15 @@ metadata:
           }
         },
         {
-          "apiVersion": "dbaas.redhat.com/v1alpha1",
+          "apiVersion": "dbaas.redhat.com/v1beta1",
+          "kind": "DBaaSPolicy",
+          "metadata": {
+            "name": "dbaaspolicy-sample"
+          },
+          "spec": null
+        },
+        {
+          "apiVersion": "dbaas.redhat.com/v1beta1",
           "kind": "DBaaSProvider",
           "metadata": {
             "labels": {
@@ -172,15 +180,24 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - kind: DBaaSConnection
+      name: dbaasconnections.dbaas.redhat.com
+      version: v1alpha1
     - description: The schema for the DBaaSConnection API.
       displayName: DBaaSConnection
       kind: DBaaSConnection
       name: dbaasconnections.dbaas.redhat.com
+      version: v1beta1
+    - kind: DBaaSInstance
+      name: dbaasinstances.dbaas.redhat.com
       version: v1alpha1
     - description: The schema for the DBaaSInstance API.
       displayName: DBaaSInstance
       kind: DBaaSInstance
       name: dbaasinstances.dbaas.redhat.com
+      version: v1beta1
+    - kind: DBaaSInventory
+      name: dbaasinventories.dbaas.redhat.com
       version: v1alpha1
     - description: The schema for the DBaaSInventory API. Inventory objects must be
         created in a valid namespace, determined by the existence of a DBaaSPolicy
@@ -188,11 +205,17 @@ spec:
       displayName: Provider Account
       kind: DBaaSInventory
       name: dbaasinventories.dbaas.redhat.com
+      version: v1beta1
+    - kind: DBaaSPlatform
+      name: dbaasplatforms.dbaas.redhat.com
       version: v1alpha1
     - description: The schema for the DBaaSPlatform API.
       displayName: DBaaSPlatform
       kind: DBaaSPlatform
       name: dbaasplatforms.dbaas.redhat.com
+      version: v1beta1
+    - kind: DBaaSPolicy
+      name: dbaaspolicies.dbaas.redhat.com
       version: v1alpha1
     - description: Enables administrative capabilities within a namespace, and sets
         a default inventory policy. Policy defaults can be overridden on a per-inventory
@@ -200,12 +223,15 @@ spec:
       displayName: Provider Account Policy
       kind: DBaaSPolicy
       name: dbaaspolicies.dbaas.redhat.com
+      version: v1beta1
+    - kind: DBaaSProvider
+      name: dbaasproviders.dbaas.redhat.com
       version: v1alpha1
     - description: The schema for the DBaaSProvider API.
       displayName: DBaaSProvider
       kind: DBaaSProvider
       name: dbaasproviders.dbaas.redhat.com
-      version: v1alpha1
+      version: v1beta1
   description: |
     The Red Hat OpenShift Database Access Operator enables OpenShift users to discover & connect with database instances
     hosted on 3rd-party ISV cloud platforms such as MongoDB Atlas, CrunchyData Bridge & CockroachCloud.
@@ -440,6 +466,7 @@ spec:
             metadata:
               labels:
                 control-plane: controller-manager
+                dbaas-apiversion: v1beta1
                 type: dbaas-operator
             spec:
               containers:
@@ -606,7 +633,23 @@ spec:
   version: 0.4.0
   webhookdefinitions:
   - admissionReviewVersions:
-    - v1
+    - v1alpha1
+    - v1beta1
+    containerPort: 443
+    conversionCRDs:
+    - dbaasconnections.dbaas.redhat.com
+    - dbaasinstances.dbaas.redhat.com
+    - dbaasinventories.dbaas.redhat.com
+    - dbaaspolicies.dbaas.redhat.com
+    - dbaasproviders.dbaas.redhat.com
+    deploymentName: dbaas-operator-controller-manager
+    generateName: cdbaasconnectionsdbaasinstancesdbaasinventoriesdbaaspoliciesdbaasproviders.kb.io
+    sideEffects: None
+    targetPort: 9443
+    type: ConversionWebhook
+    webhookPath: /convert
+  - admissionReviewVersions:
+    - v1beta1
     containerPort: 443
     deploymentName: dbaas-operator-controller-manager
     failurePolicy: Fail
@@ -615,7 +658,7 @@ spec:
     - apiGroups:
       - dbaas.redhat.com
       apiVersions:
-      - v1alpha1
+      - v1beta1
       operations:
       - CREATE
       - UPDATE
@@ -624,9 +667,9 @@ spec:
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaasconnection
+    webhookPath: /validate-dbaas-redhat-com-v1beta1-dbaasconnection
   - admissionReviewVersions:
-    - v1
+    - v1beta1
     containerPort: 443
     deploymentName: dbaas-operator-controller-manager
     failurePolicy: Fail
@@ -635,7 +678,7 @@ spec:
     - apiGroups:
       - dbaas.redhat.com
       apiVersions:
-      - v1alpha1
+      - v1beta1
       operations:
       - CREATE
       - UPDATE
@@ -644,9 +687,9 @@ spec:
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaasinventory
+    webhookPath: /validate-dbaas-redhat-com-v1beta1-dbaasinventory
   - admissionReviewVersions:
-    - v1
+    - v1beta1
     containerPort: 443
     deploymentName: dbaas-operator-controller-manager
     failurePolicy: Fail
@@ -655,7 +698,7 @@ spec:
     - apiGroups:
       - dbaas.redhat.com
       apiVersions:
-      - v1alpha1
+      - v1beta1
       operations:
       - CREATE
       - UPDATE
@@ -664,4 +707,4 @@ spec:
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dbaas-redhat-com-v1alpha1-dbaaspolicy
+    webhookPath: /validate-dbaas-redhat-com-v1beta1-dbaaspolicy
