@@ -23,6 +23,7 @@ spec:
       labels:
         control-plane: controller-manager
         type: dbaas-operator
+        dbaas-apiversion: v1beta1
     spec:
       containers:
       - command:

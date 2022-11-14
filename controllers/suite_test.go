@@ -39,6 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -72,6 +73,8 @@ var _ = BeforeSuite(func() {
 	scheme := runtime.NewScheme()
 	err := v1alpha1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
+	err = v1beta1.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
 	err = clientgoscheme.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 	err = rbacv1.AddToScheme(scheme)
@@ -86,6 +89,9 @@ var _ = BeforeSuite(func() {
 			filepath.Join("..", "test", "crd"),
 		},
 		ErrorIfCRDPathMissing: true,
+		WebhookInstallOptions: envtest.WebhookInstallOptions{
+			Paths: []string{filepath.Join("..", "config", "webhook")},
+		},
 	}
 
 	cfg, err := testEnv.Start()
@@ -94,13 +100,17 @@ var _ = BeforeSuite(func() {
 
 	//+kubebuilder:scaffold:scheme
 
-	ctx, cancel = context.WithCancel(context.Background())
+	ctx, cancel = context.WithCancel(context.TODO())
 
 	err = os.Setenv(InstallNamespaceEnvVar, testNamespace)
 	Expect(err).NotTo(HaveOccurred())
 
+	webhookInstallOptions := &testEnv.WebhookInstallOptions
 	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme: scheme,
+		Scheme:  scheme,
+		Host:    webhookInstallOptions.LocalServingHost,
+		Port:    webhookInstallOptions.LocalServingPort,
+		CertDir: webhookInstallOptions.LocalServingCertDir,
 		ClientDisableCacheFor: []client.Object{
 			&operatorframework.ClusterServiceVersion{},
 			&corev1.Secret{},
@@ -109,6 +119,21 @@ var _ = BeforeSuite(func() {
 	)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sManager).NotTo(BeNil())
+
+	err = (&v1beta1.DBaaSConnection{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = (&v1beta1.DBaaSInstance{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = (&v1beta1.DBaaSInventory{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = (&v1beta1.DBaaSPolicy{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = (&v1beta1.DBaaSProvider{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
 
 	dRec = &DBaaSReconciler{
 		Client:           k8sManager.GetClient(),
@@ -120,6 +145,7 @@ var _ = BeforeSuite(func() {
 		DBaaSReconciler: dRec,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
+
 	inventoryCtrl, err := (&DBaaSInventoryReconciler{
 		DBaaSReconciler: dRec,
 	}).SetupWithManager(k8sManager)
@@ -149,6 +175,13 @@ var _ = BeforeSuite(func() {
 		InventoryCtrl:   iCtrl,
 		ConnectionCtrl:  cCtrl,
 		InstanceCtrl:    inCtrl,
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&DBaaSPlatformReconciler{
+		DBaaSReconciler: dRec,
+		Log:             ctrl.Log.WithName("controllers").WithName("DBaaSPlatform"),
+		OcpVersion:      "",
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 

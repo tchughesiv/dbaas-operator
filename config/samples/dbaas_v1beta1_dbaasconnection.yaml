@@ -1,4 +1,4 @@
-apiVersion: dbaas.redhat.com/v1alpha1
+apiVersion: dbaas.redhat.com/v1beta1
 kind: DBaaSConnection
 metadata:
   name: dbaasconnection-sample
