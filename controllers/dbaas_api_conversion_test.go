@@ -50,3 +50,23 @@ var _ = Context("DBaaSInventory Conversion", func() {
 		})
 	})
 })
+
+var _ = Context("DBaaSConnection Conversion", func() {
+	var _ = Describe("Roundtrip", func() {
+		Specify("converts to and from the same object", func() {
+			instanceID := "testing"
+			src := v1alpha1.DBaaSConnection{
+				Spec: v1alpha1.DBaaSConnectionSpec{
+					InstanceID: instanceID,
+				},
+			}
+			intermediate := v1beta1.DBaaSConnection{}
+			dst := v1alpha1.DBaaSConnection{}
+
+			Expect(src.ConvertTo(&intermediate)).To(Succeed())
+			Expect(dst.ConvertFrom(&intermediate)).To(Succeed())
+			Expect(intermediate.Spec.DatabaseServiceID).To(Equal(instanceID))
+			Expect(dst).To(Equal(src))
+		})
+	})
+})

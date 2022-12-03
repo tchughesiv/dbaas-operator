@@ -59,18 +59,18 @@ func (r *DBaaSConnection) ValidateDelete() error {
 }
 
 func (r *DBaaSConnection) validateCreateDBaaSConnectionSpec() error {
-	if len(r.Spec.InstanceID) > 0 && r.Spec.InstanceRef != nil && len(r.Spec.InstanceRef.Name) > 0 {
-		return field.Invalid(field.NewPath("spec").Child("instanceID"), r.Spec.InstanceID, "both instanceID and instanceRef are specified")
+	if len(r.Spec.DatabaseServiceID) > 0 && r.Spec.InstanceRef != nil && len(r.Spec.InstanceRef.Name) > 0 {
+		return field.Invalid(field.NewPath("spec").Child("databaseServiceID"), r.Spec.DatabaseServiceID, "both databaseServiceID and instanceRef are specified")
 	}
-	if len(r.Spec.InstanceID) == 0 && (r.Spec.InstanceRef == nil || len(r.Spec.InstanceRef.Name) == 0) {
-		return field.Invalid(field.NewPath("spec").Child("instanceID"), r.Spec.InstanceID, "either instanceID or instanceRef must be specified")
+	if len(r.Spec.DatabaseServiceID) == 0 && (r.Spec.InstanceRef == nil || len(r.Spec.InstanceRef.Name) == 0) {
+		return field.Invalid(field.NewPath("spec").Child("databaseServiceID"), r.Spec.DatabaseServiceID, "either databaseServiceID or instanceRef must be specified")
 	}
 	return nil
 }
 
 func (r *DBaaSConnection) validateUpdateDBaaSConnectionSpec(old *DBaaSConnection) error {
-	if r.Spec.InstanceID != old.Spec.InstanceID {
-		return field.Invalid(field.NewPath("spec").Child("instanceID"), r.Spec.InstanceID, "instanceID is immutable")
+	if r.Spec.DatabaseServiceID != old.Spec.DatabaseServiceID {
+		return field.Invalid(field.NewPath("spec").Child("databaseServiceID"), r.Spec.DatabaseServiceID, "databaseServiceID is immutable")
 	}
 
 	if !reflect.DeepEqual(r.Spec.InventoryRef, old.Spec.InventoryRef) {

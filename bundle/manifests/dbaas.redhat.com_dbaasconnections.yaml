@@ -198,12 +198,12 @@ spec:
           spec:
             description: Defines the desired state of a DBaaSConnection object.
             properties:
-              instanceID:
+              databaseServiceID:
                 description: The ID of the instance to connect to, as seen in the
                   status of the referenced DBaaSInventory.
                 type: string
               instanceRef:
-                description: A reference to the DBaaSInstance CR used, if the InstanceID
+                description: A reference to the DBaaSInstance CR used, if the DatabaseServiceID
                   is not specified.
                 properties:
                   name:

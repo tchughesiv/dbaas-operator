@@ -40,7 +40,7 @@ var testDBaaSConnection = &DBaaSConnection{
 			Name:      inventoryName,
 			Namespace: testNamespace,
 		},
-		InstanceID: instanceID,
+		DatabaseServiceID: instanceID,
 	},
 }
 
@@ -86,10 +86,10 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 			},
 			Entry("not allow updating instanceID",
 				func(spec *DBaaSConnectionSpec) {
-					spec.InstanceID = "updated-instanceID"
+					spec.DatabaseServiceID = "updated-instanceID"
 				},
 				"admission webhook \"vdbaasconnection.kb.io\" denied the request: "+
-					"spec.instanceID: Invalid value: \"updated-instanceID\": instanceID is immutable"),
+					"spec.databaseServiceID: Invalid value: \"updated-instanceID\": databaseServiceID is immutable"),
 			Entry("not allow updating inventoryRef",
 				func(spec *DBaaSConnectionSpec) {
 					spec.InventoryRef.Name = "updated-inventory"
@@ -126,7 +126,7 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 			}
 			err := k8sClient.Create(ctx, testDBaaSConnectionNoInstance)
 			Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-				"spec.instanceID: Invalid value: \"\": either instanceID or instanceRef must be specified"))
+				"spec.databaseServiceID: Invalid value: \"\": either databaseServiceID or instanceRef must be specified"))
 		})
 	})
 
@@ -142,7 +142,7 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 						Name:      inventoryName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 					InstanceRef: &NamespacedName{
 						Name:      instanceName,
 						Namespace: testNamespace,
@@ -151,7 +151,7 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 			}
 			err := k8sClient.Create(ctx, testDBaaSConnectionNoInstance)
 			Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-				"spec.instanceID: Invalid value: \"test-instanceID\": both instanceID and instanceRef are specified"))
+				"spec.databaseServiceID: Invalid value: \"test-instanceID\": both databaseServiceID and instanceRef are specified"))
 		})
 	})
 
@@ -182,7 +182,7 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(testDBaaSConnectionNoInstanceID), testDBaaSConnectionNoInstanceID); err != nil {
 					return false
 				}
-				if len(testDBaaSConnectionNoInstanceID.Spec.InstanceID) > 0 {
+				if len(testDBaaSConnectionNoInstanceID.Spec.DatabaseServiceID) > 0 {
 					return false
 				}
 				return true
@@ -205,10 +205,10 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 
 		It("should not allow setting instance ID", func() {
 			By("updating instanceID twice")
-			testDBaaSConnectionNoInstanceID.Spec.InstanceID = "updated-instanceID"
+			testDBaaSConnectionNoInstanceID.Spec.DatabaseServiceID = "updated-instanceID"
 			err := k8sClient.Update(ctx, testDBaaSConnectionNoInstanceID)
 			Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-				"spec.instanceID: Invalid value: \"updated-instanceID\": instanceID is immutable"))
+				"spec.databaseServiceID: Invalid value: \"updated-instanceID\": databaseServiceID is immutable"))
 		})
 	})
 
@@ -223,7 +223,7 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 					Name:      inventoryName,
 					Namespace: testNamespace,
 				},
-				InstanceID: instanceID,
+				DatabaseServiceID: instanceID,
 			},
 		}
 

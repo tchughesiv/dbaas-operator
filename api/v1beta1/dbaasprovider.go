@@ -202,9 +202,9 @@ type DBaaSConnectionSpec struct {
 	InventoryRef NamespacedName `json:"inventoryRef"`
 
 	// The ID of the instance to connect to, as seen in the status of the referenced DBaaSInventory.
-	InstanceID string `json:"instanceID,omitempty"`
+	DatabaseServiceID string `json:"databaseServiceID,omitempty"`
 
-	// A reference to the DBaaSInstance CR used, if the InstanceID is not specified.
+	// A reference to the DBaaSInstance CR used, if the DatabaseServiceID is not specified.
 	InstanceRef *NamespacedName `json:"instanceRef,omitempty"`
 }
 

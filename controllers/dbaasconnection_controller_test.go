@@ -39,7 +39,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryRefName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			DatabaseServiceID: instanceID,
 		}
 		createdDBaaSConnection := &v1beta1.DBaaSConnection{
 			ObjectMeta: metav1.ObjectMeta{
@@ -79,7 +79,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			DatabaseServiceID: instanceID,
 		}
 		createdDBaaSConnection := &v1beta1.DBaaSConnection{
 			ObjectMeta: metav1.ObjectMeta{
@@ -147,7 +147,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			DatabaseServiceID: instanceID,
 		}
 		otherNS := v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -339,7 +339,7 @@ var _ = Describe("DBaaSConnection controller - nominal", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 				}
 				createdDBaaSConnection := &v1beta1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -419,10 +419,10 @@ var _ = Describe("DBaaSConnection controller - nominal", func() {
 				Context("when updating DBaaSConnection spec", func() {
 					It("should not allow setting instance ID", func() {
 						By("updating instanceID twice")
-						createdDBaaSConnection.Spec.InstanceID = "updated-test-instanceID"
+						createdDBaaSConnection.Spec.DatabaseServiceID = "updated-test-instanceID"
 						err := dRec.Update(ctx, createdDBaaSConnection)
 						Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-							"spec.instanceID: Invalid value: \"updated-test-instanceID\": instanceID is immutable"))
+							"spec.databaseServiceID: Invalid value: \"updated-test-instanceID\": databaseServiceID is immutable"))
 					})
 				})
 			})
@@ -543,7 +543,7 @@ var _ = Describe("DBaaSConnection controller - nominal with instance reference",
 								Name:      inventoryRefName,
 								Namespace: testNamespace,
 							},
-							InstanceID: instanceID,
+							DatabaseServiceID: instanceID,
 						}
 						assertProviderResourceCreated(createdDBaaSConnection, testConnectionKind, expectedDBaaSConnectionSpec)()
 
@@ -676,7 +676,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 				}
 				createdDBaaSConnection := &v1beta1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -713,10 +713,10 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				Context("when updating DBaaSConnection spec", func() {
 					It("should not allow setting instance ID", func() {
 						By("updating instanceID twice")
-						createdDBaaSConnection.Spec.InstanceID = "updated-test-instanceID"
+						createdDBaaSConnection.Spec.DatabaseServiceID = "updated-test-instanceID"
 						err := dRec.Update(ctx, createdDBaaSConnection)
 						Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-							"spec.instanceID: Invalid value: \"updated-test-instanceID\": instanceID is immutable"))
+							"spec.databaseServiceID: Invalid value: \"updated-test-instanceID\": databaseServiceID is immutable"))
 					})
 				})
 			})
@@ -781,7 +781,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 				}
 				createdDBaaSConnection := &v1beta1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -818,10 +818,10 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				Context("when updating DBaaSConnection spec", func() {
 					It("should not allow setting instance ID", func() {
 						By("updating instanceID twice")
-						createdDBaaSConnection.Spec.InstanceID = "updated-test-instanceID"
+						createdDBaaSConnection.Spec.DatabaseServiceID = "updated-test-instanceID"
 						err := dRec.Update(ctx, createdDBaaSConnection)
 						Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-							"spec.instanceID: Invalid value: \"updated-test-instanceID\": instanceID is immutable"))
+							"spec.databaseServiceID: Invalid value: \"updated-test-instanceID\": databaseServiceID is immutable"))
 					})
 				})
 			})
@@ -905,7 +905,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 				}
 				createdDBaaSConnection := &v1beta1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -942,10 +942,10 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				Context("when updating DBaaSConnection spec", func() {
 					It("should not allow setting instance ID", func() {
 						By("updating instanceID twice")
-						createdDBaaSConnection.Spec.InstanceID = "updated-test-instanceID"
+						createdDBaaSConnection.Spec.DatabaseServiceID = "updated-test-instanceID"
 						err := dRec.Update(ctx, createdDBaaSConnection)
 						Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-							"spec.instanceID: Invalid value: \"updated-test-instanceID\": instanceID is immutable"))
+							"spec.databaseServiceID: Invalid value: \"updated-test-instanceID\": databaseServiceID is immutable"))
 					})
 				})
 			})
@@ -1015,7 +1015,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					DatabaseServiceID: instanceID,
 				}
 				createdDBaaSConnection := &v1beta1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -1052,10 +1052,10 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				Context("when updating DBaaSConnection spec", func() {
 					It("should not allow setting instance ID", func() {
 						By("updating instanceID twice")
-						createdDBaaSConnection.Spec.InstanceID = "updated-test-instanceID"
+						createdDBaaSConnection.Spec.DatabaseServiceID = "updated-test-instanceID"
 						err := dRec.Update(ctx, createdDBaaSConnection)
 						Expect(err).Should(MatchError("admission webhook \"vdbaasconnection.kb.io\" denied the request: " +
-							"spec.instanceID: Invalid value: \"updated-test-instanceID\": instanceID is immutable"))
+							"spec.databaseServiceID: Invalid value: \"updated-test-instanceID\": databaseServiceID is immutable"))
 					})
 				})
 			})

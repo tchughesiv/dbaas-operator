@@ -32,7 +32,7 @@ func (src *DBaaSConnection) ConvertTo(dstRaw conversion.Hub) error {
 
 	// Spec
 	dst.Spec.InventoryRef = v1beta1.NamespacedName(src.Spec.InventoryRef)
-	dst.Spec.InstanceID = src.Spec.InstanceID
+	dst.Spec.DatabaseServiceID = src.Spec.InstanceID
 	if src.Spec.InstanceRef != nil {
 		dst.Spec.InstanceRef = &v1beta1.NamespacedName{
 			Name:      src.Spec.InstanceRef.Name,
@@ -55,7 +55,7 @@ func (dst *DBaaSConnection) ConvertFrom(srcRaw conversion.Hub) error {
 
 	// Spec
 	dst.Spec.InventoryRef = NamespacedName(src.Spec.InventoryRef)
-	dst.Spec.InstanceID = src.Spec.InstanceID
+	dst.Spec.InstanceID = src.Spec.DatabaseServiceID
 	if src.Spec.InstanceRef != nil {
 		dst.Spec.InstanceRef = &NamespacedName{
 			Name:      src.Spec.InstanceRef.Name,

@@ -260,7 +260,7 @@ func (r *DBaaSConnectionReconciler) Delete(e event.DeleteEvent) error {
 }
 
 func (r *DBaaSConnectionReconciler) getConnectionSpec(ctx context.Context, spec *v1beta1.DBaaSConnectionSpec) (interface{}, error) {
-	if len(spec.InstanceID) > 0 {
+	if len(spec.DatabaseServiceID) > 0 {
 		return spec, nil
 	}
 
@@ -286,7 +286,7 @@ func (r *DBaaSConnectionReconciler) getConnectionSpec(ctx context.Context, spec 
 		return nil, fmt.Errorf("instance ID is not available")
 	}
 
-	spec.InstanceID = instance.Status.InstanceID
+	spec.DatabaseServiceID = instance.Status.InstanceID
 	spec.InstanceRef = nil
 	return spec, nil
 }
