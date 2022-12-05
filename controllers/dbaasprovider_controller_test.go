@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 )
 
@@ -57,22 +58,22 @@ var _ = Describe("DBaaSProvider controller", func() {
 
 		iSrc := &unstructured.Unstructured{}
 		iSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    createdInventoryKind,
 		})
 		iOwner := &v1beta1.DBaaSInventory{}
 		cSrc := &unstructured.Unstructured{}
 		cSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    createdConnectionKind,
 		})
 		cOwner := &v1beta1.DBaaSConnection{}
 		inSrc := &unstructured.Unstructured{}
 		inSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    createdInstanceKind,
 		})
 		inOwner := &v1beta1.DBaaSInstance{}
@@ -88,20 +89,20 @@ var _ = Describe("DBaaSProvider controller", func() {
 
 		uiSrc := &unstructured.Unstructured{}
 		uiSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    updatedInventoryKind,
 		})
 		ucSrc := &unstructured.Unstructured{}
 		ucSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    updatedConnectionKind,
 		})
 		uinSrc := &unstructured.Unstructured{}
 		uinSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    updatedInstanceKind,
 		})
 
@@ -164,22 +165,22 @@ var _ = Describe("DBaaSProvider controller", func() {
 
 		iSrc := &unstructured.Unstructured{}
 		iSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    deletedInventoryKind,
 		})
 		iOwner := &v1beta1.DBaaSInventory{}
 		cSrc := &unstructured.Unstructured{}
 		cSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    deletedConnectionKind,
 		})
 		cOwner := &v1beta1.DBaaSConnection{}
 		inSrc := &unstructured.Unstructured{}
 		inSrc.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    deletedInstanceKind,
 		})
 		inOwner := &v1beta1.DBaaSInstance{}

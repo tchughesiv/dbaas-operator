@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 	"github.com/go-logr/logr"
 
@@ -51,8 +52,8 @@ func (r *DBaaSReconciler) getDBaaSProvider(ctx context.Context, providerName str
 func (r *DBaaSReconciler) watchDBaaSProviderObject(ctrl controller.Controller, object runtime.Object, providerObjectKind string) error {
 	providerObject := unstructured.Unstructured{}
 	providerObject.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   v1beta1.GroupVersion.Group,
-		Version: v1beta1.GroupVersion.Version,
+		Group:   v1alpha1.GroupVersion.Group,
+		Version: v1alpha1.GroupVersion.Version,
 		Kind:    providerObjectKind,
 	})
 	err := ctrl.Watch(
@@ -73,8 +74,8 @@ func (r *DBaaSReconciler) watchDBaaSProviderObject(ctrl controller.Controller, o
 func (r *DBaaSReconciler) createProviderObject(object client.Object, providerObjectKind string) *unstructured.Unstructured {
 	var providerObject unstructured.Unstructured
 	providerObject.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   v1beta1.GroupVersion.Group,
-		Version: v1beta1.GroupVersion.Version,
+		Group:   v1alpha1.GroupVersion.Group,
+		Version: v1alpha1.GroupVersion.Version,
 		Kind:    providerObjectKind,
 	})
 	providerObject.SetNamespace(object.GetNamespace())

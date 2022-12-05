@@ -41,6 +41,7 @@ import (
 
 	"github.com/go-logr/logr"
 
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 )
 
@@ -158,8 +159,8 @@ func assertProviderResourceCreated(object client.Object, providerResourceKind st
 		objectKey := client.ObjectKeyFromObject(object)
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
@@ -246,8 +247,8 @@ func assertDBaaSResourceProviderStatusUpdated(object client.Object, resourceDBaa
 		By("getting the provider resource")
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
@@ -433,8 +434,8 @@ func assertProviderResourceSpecUpdated(object client.Object, providerResourceKin
 		By("checking the provider resource status updated")
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
