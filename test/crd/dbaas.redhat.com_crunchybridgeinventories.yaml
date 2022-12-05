@@ -14,7 +14,7 @@ spec:
     singular: crunchybridgeinventory
   scope: Namespaced
   versions:
-    - name: v1beta1
+    - name: v1alpha1
       schema:
         openAPIV3Schema:
           description: CrunchyBridgeInventory is the Schema for the crunchybridgeinventories
