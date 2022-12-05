@@ -18,7 +18,7 @@ spec:
     singular: mongodbatlasinstance
   scope: Namespaced
   versions:
-    - name: v1beta1
+    - name: v1alpha1
       schema:
         openAPIV3Schema:
           description: MongoDBAtlasInstance is the Schema for the MongoDBAtlasInstance

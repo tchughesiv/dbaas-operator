@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -67,8 +68,8 @@ var _ = Describe("Create provider object", func() {
 
 		expected := &unstructured.Unstructured{}
 		expected.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   "dbaas.redhat.com",
-			Version: "v1beta1",
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    "test-kind",
 		})
 		expected.SetNamespace("test-namespace")
@@ -184,8 +185,8 @@ var _ = Describe("Watch DBaaS provider Object", func() {
 	It("should invoke controller watch with correctly input", func() {
 		source := &unstructured.Unstructured{}
 		source.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    "test-kind",
 		})
 		owner := &v1beta1.DBaaSInventory{}

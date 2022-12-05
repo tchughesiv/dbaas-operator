@@ -41,6 +41,7 @@ import (
 
 	"github.com/go-logr/logr"
 
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
 )
 
@@ -128,12 +129,12 @@ func assertResourceCreation(object client.Object) func() {
 	}
 }
 
-func assertResourceCreationWithProviderStatus(object client.Object, inventroyDBaaSStatus metav1.ConditionStatus, providerResourceKind string, DBaaSResourceSpec interface{}) func() {
+func assertResourceCreationWithProviderStatus(object client.Object, inventroyDBaaSStatus metav1.ConditionStatus, v1alpha1 string, DBaaSResourceSpec interface{}) func() {
 	return func() {
 		assertResourceCreation(object)()
 		err := dRec.Get(ctx, client.ObjectKeyFromObject(object), object)
 		Expect(err).Should(Succeed())
-		assertDBaaSResourceProviderStatusUpdated(object, inventroyDBaaSStatus, providerResourceKind, DBaaSResourceSpec)()
+		assertDBaaSResourceProviderStatusUpdated(object, inventroyDBaaSStatus, v1alpha1, DBaaSResourceSpec)()
 	}
 }
 func assertResourceDeletion(object client.Object) func() {
@@ -158,8 +159,8 @@ func assertProviderResourceCreated(object client.Object, providerResourceKind st
 		objectKey := client.ObjectKeyFromObject(object)
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
@@ -246,8 +247,8 @@ func assertDBaaSResourceProviderStatusUpdated(object client.Object, resourceDBaa
 		By("getting the provider resource")
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
@@ -433,8 +434,8 @@ func assertProviderResourceSpecUpdated(object client.Object, providerResourceKin
 		By("checking the provider resource status updated")
 		providerResource := &unstructured.Unstructured{}
 		providerResource.SetGroupVersionKind(schema.GroupVersionKind{
-			Group:   v1beta1.GroupVersion.Group,
-			Version: v1beta1.GroupVersion.Version,
+			Group:   v1alpha1.GroupVersion.Group,
+			Version: v1alpha1.GroupVersion.Version,
 			Kind:    providerResourceKind,
 		})
 		Eventually(func() bool {
