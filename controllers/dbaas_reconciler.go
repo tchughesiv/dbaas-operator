@@ -112,7 +112,7 @@ func (r *DBaaSReconciler) policyListByNS(ctx context.Context, namespace string) 
 }
 
 // check if namespace is a valid connection namespace
-func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace string, inventory *v1beta1.DBaaSInventory) (bool, error) {
+func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace string, inventory *v1beta1.DBaaSInventory, activePolicy *v1beta1.DBaaSPolicy) (bool, error) {
 	// valid if in same namespace as inventory
 	if namespace == inventory.Namespace {
 		return true, nil
@@ -127,16 +127,12 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 			validNsSelector = inventory.Spec.Policy.Connections.NsSelector
 		}
 	} else {
-		policyList, err := r.policyListByNS(ctx, inventory.Namespace)
-		if err != nil {
-			return false, err
-		}
-		if policy := getActivePolicy(policyList); policy != nil {
-			if policy.Spec.Connections.Namespaces != nil {
-				validNamespaces = *policy.Spec.Connections.Namespaces
+		if activePolicy != nil {
+			if activePolicy.Spec.Connections.Namespaces != nil {
+				validNamespaces = *activePolicy.Spec.Connections.Namespaces
 			}
-			if policy.Spec.Connections.NsSelector != nil {
-				validNsSelector = policy.Spec.Connections.NsSelector
+			if activePolicy.Spec.Connections.NsSelector != nil {
+				validNsSelector = activePolicy.Spec.Connections.NsSelector
 			}
 		}
 	}
@@ -163,7 +159,7 @@ func (r *DBaaSReconciler) isValidConnectionNS(ctx context.Context, namespace str
 }
 
 // check if provisioning is allowed against an inventory. inventory takes precedence over dbaaspolicy.
-func canProvision(inventory v1beta1.DBaaSInventory, activePolicy *v1beta1.DBaaSPolicy) bool {
+func canProvision(inventory *v1beta1.DBaaSInventory, activePolicy *v1beta1.DBaaSPolicy) bool {
 	if activePolicy == nil {
 		// not an active namespace
 		return false
@@ -280,9 +276,10 @@ func (r *DBaaSReconciler) checkInventory(ctx context.Context, inventoryRef v1bet
 	if err != nil {
 		return
 	}
-	provision = canProvision(*inventory, getActivePolicy(policyList))
+	activePolicy := getActivePolicy(policyList)
+	provision = canProvision(inventory, activePolicy)
 
-	validNS, err = r.isValidConnectionNS(ctx, DBaaSObject.GetNamespace(), inventory)
+	validNS, err = r.isValidConnectionNS(ctx, DBaaSObject.GetNamespace(), inventory, activePolicy)
 	if err != nil {
 		return
 	}

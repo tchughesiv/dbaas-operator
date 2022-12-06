@@ -48,7 +48,7 @@ type DBaaSConnectionPolicy struct {
 	// Results use a logical AND from matchExpressions and matchLabels queries.
 	// An empty label selector matches all objects.
 	// A null label selector matches no objects.
-	NsSelector *metav1.LabelSelector `json:"NsSelector,omitempty"`
+	NsSelector *metav1.LabelSelector `json:"nsSelector,omitempty"`
 }
 
 // Defines the observed state of a DBaaSPolicy object.

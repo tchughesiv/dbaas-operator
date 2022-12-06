@@ -33,21 +33,15 @@ func (src *DBaaSInventory) ConvertTo(dstRaw conversion.Hub) error {
 	// Spec
 	dst.Spec.CredentialsRef = (*v1beta1.LocalObjectReference)(src.Spec.CredentialsRef)
 	if src.Spec.ConnectionNamespaces != nil {
-		if dst.Spec.Policy == nil {
-			dst.Spec.Policy = &v1beta1.DBaaSInventoryPolicy{}
-		}
+		setPolicyObj(dst)
 		dst.Spec.Policy.Connections.Namespaces = src.Spec.ConnectionNamespaces
 	}
 	if src.Spec.ConnectionNsSelector != nil {
-		if dst.Spec.Policy == nil {
-			dst.Spec.Policy = &v1beta1.DBaaSInventoryPolicy{}
-		}
+		setPolicyObj(dst)
 		dst.Spec.Policy.Connections.NsSelector = src.Spec.ConnectionNsSelector
 	}
 	if src.Spec.DisableProvisions != nil {
-		if dst.Spec.Policy == nil {
-			dst.Spec.Policy = &v1beta1.DBaaSInventoryPolicy{}
-		}
+		setPolicyObj(dst)
 		dst.Spec.Policy.DisableProvisions = src.Spec.DisableProvisions
 	}
 	dst.Spec.ProviderRef = v1beta1.NamespacedName(src.Spec.ProviderRef)
@@ -59,6 +53,12 @@ func (src *DBaaSInventory) ConvertTo(dstRaw conversion.Hub) error {
 	}
 
 	return nil
+}
+
+func setPolicyObj(dst *v1beta1.DBaaSInventory) {
+	if dst.Spec.Policy == nil {
+		dst.Spec.Policy = &v1beta1.DBaaSInventoryPolicy{}
+	}
 }
 
 // ConvertFrom converts from the Hub version (v1beta1) to this version.

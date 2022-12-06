@@ -253,7 +253,7 @@ var _ = Describe("list policies by inventory namespace", func() {
 			}))
 			Expect(isOwner(&policy1, &rqList.Items[0], dRec.Scheme)).Should(BeTrue())
 
-			inventory := v1beta1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: ns.Name}}
+			inventory := &v1beta1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: ns.Name}}
 			Expect(canProvision(inventory, activePolicy)).Should(BeTrue())
 			activePolicy.Spec.DisableProvisions = &isTrue
 			Expect(canProvision(inventory, activePolicy)).Should(BeFalse())
@@ -303,7 +303,7 @@ var _ = Describe("list policies by inventory namespace", func() {
 			Expect(activePolicy).Should(Not(BeNil()))
 			Expect(activePolicy.Name).Should(Equal(policy2.Name))
 
-			inventory := v1beta1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: ns.Name}}
+			inventory := &v1beta1.DBaaSInventory{ObjectMeta: metav1.ObjectMeta{Namespace: ns.Name}}
 			Expect(canProvision(inventory, activePolicy)).Should(BeFalse())
 		})
 	})

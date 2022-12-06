@@ -224,7 +224,16 @@ spec:
                 description: Namespaces where DBaaSConnection and DBaaSInstance objects
                   are only allowed to reference a policy's inventories.
                 properties:
-                  NsSelector:
+                  namespaces:
+                    description: Namespaces where DBaaSConnection and DBaaSInstance
+                      objects are only allowed to reference a policy's inventories.
+                      Using an asterisk surrounded by single quotes ('*'), allows
+                      all namespaces. If not set in the policy or by an inventory
+                      object, connections are only allowed in the inventory's namespace.
+                    items:
+                      type: string
+                    type: array
+                  nsSelector:
                     description: Use a label selector to determine the namespaces
                       where DBaaSConnection and DBaaSInstance objects are only allowed
                       to reference a policy's inventories. A label selector is a label
@@ -273,15 +282,6 @@ spec:
                           "value". The requirements are ANDed.
                         type: object
                     type: object
-                  namespaces:
-                    description: Namespaces where DBaaSConnection and DBaaSInstance
-                      objects are only allowed to reference a policy's inventories.
-                      Using an asterisk surrounded by single quotes ('*'), allows
-                      all namespaces. If not set in the policy or by an inventory
-                      object, connections are only allowed in the inventory's namespace.
-                    items:
-                      type: string
-                    type: array
                 type: object
               disableProvisions:
                 description: Disables provisioning on inventory accounts.
