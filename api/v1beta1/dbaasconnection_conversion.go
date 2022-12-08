@@ -16,5 +16,55 @@ limitations under the License.
 
 package v1beta1
 
-// Hub marks this type as a conversion hub.
-func (*DBaaSConnection) Hub() {}
+import (
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/conversion"
+)
+
+// notes on writing good spokes https://book.kubebuilder.io/multiversion-tutorial/conversion.html
+
+// ConvertTo converts this DBaaSConnection to the Hub version (v1alpha1).
+func (src *DBaaSConnection) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha1.DBaaSConnection)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	dst.Spec.InventoryRef = v1alpha1.NamespacedName(src.Spec.InventoryRef)
+	dst.Spec.InstanceID = src.Spec.InstanceID
+	if src.Spec.InstanceRef != nil {
+		dst.Spec.InstanceRef = &v1alpha1.NamespacedName{
+			Name:      src.Spec.InstanceRef.Name,
+			Namespace: src.Spec.InstanceRef.Namespace,
+		}
+	}
+
+	// Status
+	dst.Status = v1alpha1.DBaaSConnectionStatus(src.Status)
+
+	return nil
+}
+
+// ConvertFrom converts from the Hub version (v1alpha1) to this version.
+func (dst *DBaaSConnection) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha1.DBaaSConnection)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	dst.Spec.InventoryRef = NamespacedName(src.Spec.InventoryRef)
+	dst.Spec.InstanceID = src.Spec.InstanceID
+	if src.Spec.InstanceRef != nil {
+		dst.Spec.InstanceRef = &NamespacedName{
+			Name:      src.Spec.InstanceRef.Name,
+			Namespace: src.Spec.InstanceRef.Namespace,
+		}
+	}
+
+	// Status
+	dst.Status = DBaaSConnectionStatus(src.Status)
+
+	return nil
+}

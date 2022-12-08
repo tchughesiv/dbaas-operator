@@ -33,7 +33,7 @@ const (
 var metricsToInclude = []string{"dbaas_.*$", "csv_succeeded$", "csv_abnormal$", "ALERTS$", "subscription_sync_total"}
 var replicas int32 = 1
 
-func (r *reconciler) createObservabilityCR(ctx context.Context, cr *dbaasv1beta1.DBaaSPlatform) (dbaasv1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) createObservabilityCR(ctx context.Context, cr *dbaasv1beta1.DBaaSPlatform) (dbaasv1beta1.PlatformInstlnStatus, error) {
 	config := reconcilers.GetObservabilityConfig()
 	monitoringStackCR := getDefaultMonitoringStackCR(cr.Namespace)
 

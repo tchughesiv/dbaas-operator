@@ -177,7 +177,7 @@ func (e *Execution) PlatformStackInstallationMetric(platform *dbaasv1beta1.DBaaS
 }
 
 // SetPlatformStatusMetric exposes dbaas_platform_status metric for each platform
-func SetPlatformStatusMetric(platformName dbaasv1beta1.PlatformsName, status dbaasv1beta1.PlatformsInstlnStatus, version string) {
+func SetPlatformStatusMetric(platformName dbaasv1beta1.PlatformName, status dbaasv1beta1.PlatformInstlnStatus, version string) {
 	if len(platformName) > 0 {
 		switch status {
 
@@ -199,7 +199,7 @@ func SetPlatformStatusMetric(platformName dbaasv1beta1.PlatformsName, status dba
 }
 
 // CleanPlatformStatusMetric delete the dbaas_platform_status metric for each platform
-func CleanPlatformStatusMetric(platformName dbaasv1beta1.PlatformsName, status dbaasv1beta1.PlatformsInstlnStatus, version string) {
+func CleanPlatformStatusMetric(platformName dbaasv1beta1.PlatformName, status dbaasv1beta1.PlatformInstlnStatus, version string) {
 	if len(platformName) > 0 && status == dbaasv1beta1.ResultSuccess {
 		DBaasPlatformInstallationGauge.Delete(prometheus.Labels{metricLabelName: string(platformName), metricLabelStatus: string(dbaasv1beta1.ResultSuccess), metricLabelVersion: version})
 	}

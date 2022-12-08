@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package v1alpha1
 
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -22,9 +22,9 @@ import (
 )
 
 // log is for logging in this package.
-var dbaasproviderlog = logf.Log.WithName("dbaasprovider-resource")
+var dbaasinstancelog = logf.Log.WithName("dbaasinstance-resource")
 
-func (r *DBaaSProvider) SetupWebhookWithManager(mgr ctrl.Manager) error {
+func (r *DBaaSInstance) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()

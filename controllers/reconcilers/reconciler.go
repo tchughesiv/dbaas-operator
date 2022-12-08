@@ -8,6 +8,6 @@ import (
 
 // PlatformReconciler interface for platform reconcilers
 type PlatformReconciler interface {
-	Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error)
-	Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error)
+	Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error)
+	Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error)
 }

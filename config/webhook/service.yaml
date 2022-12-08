@@ -9,4 +9,4 @@ spec:
     - port: 443
       targetPort: 9443
   selector:
-    dbaas-apiversion: v1beta1
+    dbaas-apiversion: v1alpha1

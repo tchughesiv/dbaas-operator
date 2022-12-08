@@ -24,6 +24,7 @@ import (
 type DBaaSProviderStatus struct {
 }
 
+//+kubebuilder:storageversion
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Cluster

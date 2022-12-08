@@ -56,7 +56,7 @@ var inCtrl *spyctrl
 
 const (
 	testNamespace = "default"
-	timeout       = time.Second * 30
+	timeout       = time.Second * 3
 )
 
 func TestControllers(t *testing.T) {
@@ -120,19 +120,19 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(k8sManager).NotTo(BeNil())
 
-	err = (&v1beta1.DBaaSConnection{}).SetupWebhookWithManager(k8sManager)
+	err = (&v1alpha1.DBaaSConnection{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&v1beta1.DBaaSInstance{}).SetupWebhookWithManager(k8sManager)
+	err = (&v1alpha1.DBaaSInstance{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&v1beta1.DBaaSInventory{}).SetupWebhookWithManager(k8sManager)
+	err = (&v1alpha1.DBaaSInventory{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&v1beta1.DBaaSPolicy{}).SetupWebhookWithManager(k8sManager)
+	err = (&v1alpha1.DBaaSPolicy{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&v1beta1.DBaaSProvider{}).SetupWebhookWithManager(k8sManager)
+	err = (&v1alpha1.DBaaSProvider{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
 	dRec = &DBaaSReconciler{

@@ -175,23 +175,23 @@ func main() {
 	//We'll just make sure to set `ENABLE_WEBHOOKS=false` when we run locally.
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = (&v1beta1.DBaaSConnection{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&v1alpha1.DBaaSConnection{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSConnection")
 			os.Exit(1)
 		}
-		if err = (&v1beta1.DBaaSInventory{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&v1alpha1.DBaaSInventory{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSInventory")
 			os.Exit(1)
 		}
-		if err = (&v1beta1.DBaaSPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&v1alpha1.DBaaSPolicy{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSPolicy")
 			os.Exit(1)
 		}
-		if err = (&v1beta1.DBaaSInstance{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&v1alpha1.DBaaSInstance{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSInstance")
 			os.Exit(1)
 		}
-		if err = (&v1beta1.DBaaSProvider{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&v1alpha1.DBaaSProvider{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSProvider")
 			os.Exit(1)
 		}

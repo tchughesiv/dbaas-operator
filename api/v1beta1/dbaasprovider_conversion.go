@@ -16,5 +16,75 @@ limitations under the License.
 
 package v1beta1
 
-// Hub marks this type as a conversion hub.
-func (*DBaaSProvider) Hub() {}
+import (
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/conversion"
+)
+
+// notes on writing good spokes https://book.kubebuilder.io/multiversion-tutorial/conversion.html
+
+// ConvertTo converts this DBaaSProvider to the Hub version (v1alpha1).
+func (src *DBaaSProvider) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha1.DBaaSProvider)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	dst.Spec.AllowsFreeTrial = src.Spec.AllowsFreeTrial
+	dst.Spec.ConnectionKind = src.Spec.ConnectionKind
+	for i := range src.Spec.CredentialFields {
+		dst.Spec.CredentialFields = append(dst.Spec.CredentialFields, v1alpha1.CredentialField(src.Spec.CredentialFields[i]))
+	}
+	dst.Spec.ExternalProvisionDescription = src.Spec.ExternalProvisionDescription
+	dst.Spec.ExternalProvisionURL = src.Spec.ExternalProvisionURL
+	dst.Spec.InstanceKind = src.Spec.InstanceKind
+	for i := range src.Spec.InstanceParameterSpecs {
+		dst.Spec.InstanceParameterSpecs = append(dst.Spec.InstanceParameterSpecs, v1alpha1.InstanceParameterSpec(src.Spec.InstanceParameterSpecs[i]))
+	}
+	dst.Spec.InventoryKind = src.Spec.InventoryKind
+	dst.Spec.Provider = v1alpha1.DatabaseProvider{
+		Name:               src.Spec.Provider.Name,
+		DisplayName:        src.Spec.Provider.DisplayName,
+		DisplayDescription: src.Spec.Provider.DisplayDescription,
+		Icon:               v1alpha1.ProviderIcon(src.Spec.Provider.Icon),
+	}
+
+	// Status
+	dst.Status = v1alpha1.DBaaSProviderStatus(src.Status)
+
+	return nil
+}
+
+// ConvertFrom converts from the Hub version (v1alpha1) to this version.
+func (dst *DBaaSProvider) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha1.DBaaSProvider)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	dst.Spec.AllowsFreeTrial = src.Spec.AllowsFreeTrial
+	dst.Spec.ConnectionKind = src.Spec.ConnectionKind
+	for i := range src.Spec.CredentialFields {
+		dst.Spec.CredentialFields = append(dst.Spec.CredentialFields, CredentialField(src.Spec.CredentialFields[i]))
+	}
+	dst.Spec.ExternalProvisionDescription = src.Spec.ExternalProvisionDescription
+	dst.Spec.ExternalProvisionURL = src.Spec.ExternalProvisionURL
+	dst.Spec.InstanceKind = src.Spec.InstanceKind
+	for i := range src.Spec.InstanceParameterSpecs {
+		dst.Spec.InstanceParameterSpecs = append(dst.Spec.InstanceParameterSpecs, InstanceParameterSpec(src.Spec.InstanceParameterSpecs[i]))
+	}
+	dst.Spec.InventoryKind = src.Spec.InventoryKind
+	dst.Spec.Provider = DatabaseProviderInfo{
+		Name:               src.Spec.Provider.Name,
+		DisplayName:        src.Spec.Provider.DisplayName,
+		DisplayDescription: src.Spec.Provider.DisplayDescription,
+		Icon:               ProviderIcon(src.Spec.Provider.Icon),
+	}
+
+	// Status
+	dst.Status = DBaaSProviderStatus(src.Status)
+
+	return nil
+}
