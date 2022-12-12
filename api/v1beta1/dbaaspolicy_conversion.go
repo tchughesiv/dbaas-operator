@@ -16,5 +16,57 @@ limitations under the License.
 
 package v1beta1
 
-// Hub marks this type as a conversion hub.
-func (*DBaaSPolicy) Hub() {}
+import (
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/conversion"
+)
+
+// notes on writing good spokes https://book.kubebuilder.io/multiversion-tutorial/conversion.html
+
+// ConvertTo converts this DBaaSPolicy to the Hub version (v1alpha1).
+func (src *DBaaSPolicy) ConvertTo(dstRaw conversion.Hub) error {
+	dst := dstRaw.(*v1alpha1.DBaaSPolicy)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	if src.Spec.Connections.Namespaces != nil {
+		dst.Spec.ConnectionNamespaces = src.Spec.Connections.Namespaces
+	}
+	if src.Spec.Connections.NsSelector != nil {
+		dst.Spec.ConnectionNsSelector = src.Spec.Connections.NsSelector
+	}
+	if src.Spec.DisableProvisions != nil {
+		dst.Spec.DisableProvisions = src.Spec.DisableProvisions
+	}
+
+	// Status
+	dst.Status = v1alpha1.DBaaSPolicyStatus(src.Status)
+
+	return nil
+}
+
+// ConvertFrom converts from the Hub version (v1alpha1) to this version.
+func (dst *DBaaSPolicy) ConvertFrom(srcRaw conversion.Hub) error {
+	src := srcRaw.(*v1alpha1.DBaaSPolicy)
+
+	// ObjectMeta
+	dst.ObjectMeta = src.ObjectMeta
+
+	// Spec
+	if src.Spec.ConnectionNamespaces != nil {
+		dst.Spec.Connections.Namespaces = src.Spec.ConnectionNamespaces
+	}
+	if src.Spec.ConnectionNsSelector != nil {
+		dst.Spec.Connections.NsSelector = src.Spec.ConnectionNsSelector
+	}
+	if src.Spec.DisableProvisions != nil {
+		dst.Spec.DisableProvisions = src.Spec.DisableProvisions
+	}
+
+	// Status
+	dst.Status = DBaaSPolicyStatus(src.Status)
+
+	return nil
+}

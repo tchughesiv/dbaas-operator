@@ -43,7 +43,7 @@ func NewReconciler(client client.Client, scheme *runtime.Scheme, logger logr.Log
 }
 
 // Reconcile deploys the dynamic console plugin
-func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	status, err := r.reconcileService(ctx, cr)
 	if status != v1beta1.ResultSuccess {
 		return status, err
@@ -68,7 +68,7 @@ func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (
 }
 
 // Cleanup cleanup resources related to the console plugin
-func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	console := r.getOperatorConsole()
 	err := r.client.Get(ctx, client.ObjectKeyFromObject(console), console)
 	if err != nil {
@@ -101,7 +101,7 @@ func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1
 	return v1beta1.ResultSuccess, nil
 }
 
-func (r *reconciler) reconcileService(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileService(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	service := r.getService(cr)
 	_, err := controllerutil.CreateOrUpdate(ctx, r.client, service, func() error {
 		if err := ctrl.SetControllerReference(cr, service, r.scheme); err != nil {
@@ -141,7 +141,7 @@ func (r *reconciler) reconcileService(ctx context.Context, cr *v1beta1.DBaaSPlat
 	return v1beta1.ResultSuccess, nil
 }
 
-func (r *reconciler) reconcileDeployment(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileDeployment(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	deployment := r.getDeployment(cr)
 	_, err := controllerutil.CreateOrUpdate(ctx, r.client, deployment, func() error {
 		if err := ctrl.SetControllerReference(cr, deployment, r.scheme); err != nil {
@@ -258,7 +258,7 @@ func (r *reconciler) reconcileDeployment(ctx context.Context, cr *v1beta1.DBaaSP
 	return v1beta1.ResultInProgress, nil
 }
 
-func (r *reconciler) createConsolePluginCR(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) createConsolePluginCR(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	plugin := r.getConsolePlugin()
 	_, err := controllerutil.CreateOrUpdate(ctx, r.client, plugin, func() error {
 		plugin.Spec.DisplayName = r.config.DisplayName
@@ -280,7 +280,7 @@ func (r *reconciler) createConsolePluginCR(ctx context.Context, cr *v1beta1.DBaa
 	return v1beta1.ResultSuccess, nil
 }
 
-func (r *reconciler) enableConsolePluginConfig(ctx context.Context) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) enableConsolePluginConfig(ctx context.Context) (v1beta1.PlatformInstlnStatus, error) {
 	console := r.getOperatorConsole()
 	err := r.client.Get(ctx, client.ObjectKeyFromObject(console), console)
 	if err != nil {

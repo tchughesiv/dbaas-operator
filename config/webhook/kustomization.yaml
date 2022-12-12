@@ -1,4 +1,4 @@
-namePrefix: v1beta1-
+namePrefix: v1alpha1-
 
 resources:
 - manifests.yaml

@@ -11,12 +11,12 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: dbaas-operator-v1beta1-webhook-service
+          name: dbaas-operator-v1alpha1-webhook-service
           namespace: dbaas-operator-system
           path: /convert
       conversionReviewVersions:
-      - v1alpha1
       - v1beta1
+      - v1alpha1
   group: dbaas.redhat.com
   names:
     kind: DBaaSInstance
@@ -189,7 +189,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: false
+    storage: true
     subresources:
       status: {}
   - name: v1beta1
@@ -356,7 +356,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
 status:

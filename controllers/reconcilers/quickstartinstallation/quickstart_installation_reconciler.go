@@ -53,7 +53,7 @@ func NewReconciler(client client.Client, scheme *runtime.Scheme, logger logr.Log
 }
 
 // Reconcile reconciles a quickstart platform
-func (r *reconciler) Reconcile(ctx context.Context, _ *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	for qsName, qsBytes := range quickStarts {
 		status, err := r.createQuickStartCR(ctx, qsName, qsBytes)
 		if status != v1beta1.ResultSuccess {
@@ -63,7 +63,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ *v1beta1.DBaaSPlatform) (v
 	return v1beta1.ResultSuccess, nil
 }
 
-func (r *reconciler) createQuickStartCR(ctx context.Context, qsName string, qsBytes []byte) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) createQuickStartCR(ctx context.Context, qsName string, qsBytes []byte) (v1beta1.PlatformInstlnStatus, error) {
 	quickStart := r.getQuickStartModel(qsName)
 	quickStartFromFile := &consolev1.ConsoleQuickStart{}
 	err := yaml.Unmarshal(qsBytes, quickStartFromFile)
@@ -95,7 +95,7 @@ func (r *reconciler) getQuickStartModel(name string) *consolev1.ConsoleQuickStar
 	}
 }
 
-func (r *reconciler) Cleanup(ctx context.Context, _ *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Cleanup(ctx context.Context, _ *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	for qsName := range quickStarts {
 		quickstart := r.getQuickStartModel(qsName)
 		err := r.client.Delete(ctx, quickstart)

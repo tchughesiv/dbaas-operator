@@ -117,7 +117,7 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	var finished = true
 	execution := PlatformInstallStart()
-	var platforms map[v1beta1.PlatformsName]v1beta1.PlatformConfig
+	var platforms map[v1beta1.PlatformName]v1beta1.PlatformConfig
 
 	consoleURL, err := util.GetOpenshiftConsoleURL(ctx, r.Client)
 	if err != nil {
@@ -139,7 +139,7 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		nextPlatformStatus.PlatformName = platform
 		reconciler := r.getReconcilerForPlatform(platformConfig)
 		if reconciler != nil {
-			var status v1beta1.PlatformsInstlnStatus
+			var status v1beta1.PlatformInstlnStatus
 			var err error
 
 			if cr.DeletionTimestamp == nil {
@@ -158,7 +158,7 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 			// Reset error message when everything went well
 			nextPlatformStatus.LastMessage = ""
 			nextPlatformStatus.PlatformStatus = status
-			setStatusPlatform(&nextStatus.PlatformsStatus, nextPlatformStatus)
+			setStatusPlatform(&nextStatus.PlatformStatus, nextPlatformStatus)
 
 			// If a platform is not complete, do not continue with the next
 			if status != v1beta1.ResultSuccess {
@@ -296,13 +296,13 @@ func (r *DBaaSPlatformReconciler) updateStatus(cr *v1beta1.DBaaSPlatform, nextSt
 }
 
 // setStatusPlatform set the new status for installation of platforms
-func setStatusPlatform(PlatformsStatus *[]v1beta1.PlatformStatus, newPlatformStatus v1beta1.PlatformStatus) {
-	if PlatformsStatus == nil {
+func setStatusPlatform(PlatformStatus *[]v1beta1.PlatformStatus, newPlatformStatus v1beta1.PlatformStatus) {
+	if PlatformStatus == nil {
 		return
 	}
-	existingPlatformStatus := FindStatusPlatform(*PlatformsStatus, newPlatformStatus.PlatformName)
+	existingPlatformStatus := FindStatusPlatform(*PlatformStatus, newPlatformStatus.PlatformName)
 	if existingPlatformStatus == nil {
-		*PlatformsStatus = append(*PlatformsStatus, newPlatformStatus)
+		*PlatformStatus = append(*PlatformStatus, newPlatformStatus)
 		return
 	}
 
@@ -315,7 +315,7 @@ func setStatusPlatform(PlatformsStatus *[]v1beta1.PlatformStatus, newPlatformSta
 }
 
 // FindStatusPlatform finds the platformName in platforms status.
-func FindStatusPlatform(platformsStatus []v1beta1.PlatformStatus, platformName v1beta1.PlatformsName) *v1beta1.PlatformStatus {
+func FindStatusPlatform(platformsStatus []v1beta1.PlatformStatus, platformName v1beta1.PlatformName) *v1beta1.PlatformStatus {
 	for i := range platformsStatus {
 		if platformsStatus[i].PlatformName == platformName {
 			return &platformsStatus[i]

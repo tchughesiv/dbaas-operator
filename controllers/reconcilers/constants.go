@@ -76,7 +76,7 @@ const (
 )
 
 // InstallationPlatforms return the list of platforms
-var InstallationPlatforms = map[dbaasv1beta1.PlatformsName]dbaasv1beta1.PlatformConfig{
+var InstallationPlatforms = map[dbaasv1beta1.PlatformName]dbaasv1beta1.PlatformConfig{
 	dbaasv1beta1.DBaaSDynamicPluginInstallation: {
 		Name:        dbaasDynamicPluginName,
 		CSV:         fetchEnvValue(dbaasDynamicPluginVersion),

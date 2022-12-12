@@ -32,6 +32,7 @@ type DBaaSOperatorInventorySpec struct {
 	DBaaSInventoryPolicy `json:",inline"`
 }
 
+//+kubebuilder:storageversion
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

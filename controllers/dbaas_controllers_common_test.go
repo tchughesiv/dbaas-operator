@@ -411,12 +411,12 @@ func assertProviderResourceSpecUpdated(object client.Object, providerResourceKin
 			Expect(err).NotTo(HaveOccurred())
 
 			switch v := object.(type) {
-			case *v1beta1.DBaaSInventory:
-				v.Spec.DBaaSInventorySpec = *DBaaSResourceSpec.(*v1beta1.DBaaSInventorySpec)
-			case *v1beta1.DBaaSConnection:
-				v.Spec = *DBaaSResourceSpec.(*v1beta1.DBaaSConnectionSpec)
-			case *v1beta1.DBaaSInstance:
-				v.Spec = *DBaaSResourceSpec.(*v1beta1.DBaaSInstanceSpec)
+			case *v1alpha1.DBaaSInventory:
+				v.Spec.DBaaSInventorySpec = *DBaaSResourceSpec.(*v1alpha1.DBaaSInventorySpec)
+			case *v1alpha1.DBaaSConnection:
+				v.Spec = *DBaaSResourceSpec.(*v1alpha1.DBaaSConnectionSpec)
+			case *v1alpha1.DBaaSInstance:
+				v.Spec = *DBaaSResourceSpec.(*v1alpha1.DBaaSInstanceSpec)
 			default:
 				Fail("invalid test object")
 			}

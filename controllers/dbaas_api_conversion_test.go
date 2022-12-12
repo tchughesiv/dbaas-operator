@@ -28,20 +28,22 @@ var _ = Context("DBaaSInventory Conversion", func() {
 	var _ = Describe("Roundtrip", func() {
 		Specify("converts to and from the same object", func() {
 			pFalse := false
-			src := v1alpha1.DBaaSInventory{
-				Spec: v1alpha1.DBaaSOperatorInventorySpec{
-					DBaaSInventoryPolicy: v1alpha1.DBaaSInventoryPolicy{
-						DisableProvisions:    &pFalse,
-						ConnectionNamespaces: &[]string{"test", "ha"},
+			src := v1beta1.DBaaSInventory{
+				Spec: v1beta1.DBaaSOperatorInventorySpec{
+					Policy: &v1beta1.DBaaSInventoryPolicy{
+						DisableProvisions: &pFalse,
+						Connections: v1beta1.DBaaSConnectionPolicy{
+							Namespaces: &[]string{"test", "ha"},
+						},
 					},
-					ProviderRef: v1alpha1.NamespacedName{
+					ProviderRef: v1beta1.NamespacedName{
 						Name:      "trying",
 						Namespace: "this",
 					},
 				},
 			}
-			intermediate := v1beta1.DBaaSInventory{}
-			dst := v1alpha1.DBaaSInventory{}
+			intermediate := v1alpha1.DBaaSInventory{}
+			dst := v1beta1.DBaaSInventory{}
 
 			Expect(src.ConvertTo(&intermediate)).To(Succeed())
 			Expect(dst.ConvertFrom(&intermediate)).To(Succeed())

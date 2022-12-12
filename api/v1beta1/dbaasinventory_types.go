@@ -32,7 +32,6 @@ type DBaaSOperatorInventorySpec struct {
 	Policy *DBaaSInventoryPolicy `json:"policy,omitempty"`
 }
 
-//+kubebuilder:storageversion
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

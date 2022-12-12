@@ -37,7 +37,7 @@ func NewReconciler(client client.Client, scheme *runtime.Scheme, logger logr.Log
 }
 
 // Reconcile reconcile a DBaaSPlatform by creating the catalog source, a subscription and operator group
-func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 
 	status, err := r.reconcileCatalogSource(ctx)
 	if status != v1beta1.ResultSuccess {
@@ -74,7 +74,7 @@ func (r *reconciler) Reconcile(ctx context.Context, cr *v1beta1.DBaaSPlatform) (
 }
 
 // Cleanup cleanup resources associated with the DBaaSPlatform
-func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 
 	subscription := reconcilers.GetSubscription(cr.Namespace, r.config.Name+"-subscription")
 	err := r.client.Delete(ctx, subscription)
@@ -113,7 +113,7 @@ func (r *reconciler) Cleanup(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1
 
 	return v1beta1.ResultSuccess, nil
 }
-func (r *reconciler) reconcileSubscription(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileSubscription(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 
 	subscription := reconcilers.GetSubscription(cr.Namespace, r.config.Name+"-subscription")
 	catalogsource := reconcilers.GetCatalogSource(reconcilers.CatalogNamespace, r.config.Name+"-catalogsource")
@@ -150,7 +150,7 @@ func (r *reconciler) reconcileSubscription(ctx context.Context, cr *v1beta1.DBaa
 	}
 	return v1beta1.ResultSuccess, nil
 }
-func (r *reconciler) reconcileOperatorGroup(ctx context.Context) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileOperatorGroup(ctx context.Context) (v1beta1.PlatformInstlnStatus, error) {
 
 	operatorgroup := reconcilers.GetOperatorGroup(reconcilers.InstallNamespace, "global-operators")
 	_, err := controllerutil.CreateOrUpdate(ctx, r.client, operatorgroup, func() error {
@@ -164,7 +164,7 @@ func (r *reconciler) reconcileOperatorGroup(ctx context.Context) (v1beta1.Platfo
 
 	return v1beta1.ResultSuccess, nil
 }
-func (r *reconciler) reconcileCatalogSource(ctx context.Context) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileCatalogSource(ctx context.Context) (v1beta1.PlatformInstlnStatus, error) {
 	catalogsource := reconcilers.GetCatalogSource(reconcilers.CatalogNamespace, r.config.Name+"-catalogsource")
 	_, err := controllerutil.CreateOrUpdate(ctx, r.client, catalogsource, func() error {
 		catalogsource.Spec = v1alpha1.CatalogSourceSpec{
@@ -180,7 +180,7 @@ func (r *reconciler) reconcileCatalogSource(ctx context.Context) (v1beta1.Platfo
 	return v1beta1.ResultSuccess, nil
 }
 
-func (r *reconciler) waitForOperator(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) waitForOperator(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 
 	deployments := &apiv1.DeploymentList{}
 	opts := &client.ListOptions{
@@ -201,7 +201,7 @@ func (r *reconciler) waitForOperator(ctx context.Context, cr *v1beta1.DBaaSPlatf
 	return v1beta1.ResultInProgress, nil
 }
 
-func (r *reconciler) reconcileCSV(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformsInstlnStatus, error) {
+func (r *reconciler) reconcileCSV(ctx context.Context, cr *v1beta1.DBaaSPlatform) (v1beta1.PlatformInstlnStatus, error) {
 	csv := reconcilers.GetClusterServiceVersion(cr.Namespace, r.config.CSV)
 	if err := r.client.Get(ctx, client.ObjectKeyFromObject(csv), csv); err != nil {
 		if errors.IsNotFound(err) {

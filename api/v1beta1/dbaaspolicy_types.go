@@ -56,7 +56,6 @@ type DBaaSPolicyStatus struct {
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
-//+kubebuilder:storageversion
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Active",type=string,JSONPath=`.status.conditions[0].status`

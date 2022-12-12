@@ -22,37 +22,37 @@ import (
 )
 
 // The name of the platform.
-type PlatformsName string
+type PlatformName string
 
 // The status of a platform installation.
-type PlatformsInstlnStatus string
+type PlatformInstlnStatus string
 
 // The platform type.
-type PlatformsType int
+type PlatformType int
 
 // Supported platform names.
 const (
-	CrunchyBridgeInstallation      PlatformsName = "crunchy-bridge"
-	MongoDBAtlasInstallation       PlatformsName = "mongodb-atlas"
-	DBaaSDynamicPluginInstallation PlatformsName = "dbaas-dynamic-plugin"
-	CockroachDBInstallation        PlatformsName = "cockroachdb-cloud"
-	ObservabilityInstallation      PlatformsName = "observability"
-	DBaaSQuickStartInstallation    PlatformsName = "dbaas-quick-starts"
-	RDSProviderInstallation        PlatformsName = "rds-provider"
+	CrunchyBridgeInstallation      PlatformName = "crunchy-bridge"
+	MongoDBAtlasInstallation       PlatformName = "mongodb-atlas"
+	DBaaSDynamicPluginInstallation PlatformName = "dbaas-dynamic-plugin"
+	CockroachDBInstallation        PlatformName = "cockroachdb-cloud"
+	ObservabilityInstallation      PlatformName = "observability"
+	DBaaSQuickStartInstallation    PlatformName = "dbaas-quick-starts"
+	RDSProviderInstallation        PlatformName = "rds-provider"
 )
 
 // Platform types.
 const (
-	TypeQuickStart PlatformsType = iota
+	TypeQuickStart PlatformType = iota
 	TypeConsolePlugin
 	TypeOperator
 )
 
 // Platform status values.
 const (
-	ResultSuccess    PlatformsInstlnStatus = "success"
-	ResultFailed     PlatformsInstlnStatus = "failed"
-	ResultInProgress PlatformsInstlnStatus = "in progress"
+	ResultSuccess    PlatformInstlnStatus = "success"
+	ResultFailed     PlatformInstlnStatus = "failed"
+	ResultInProgress PlatformInstlnStatus = "in progress"
 )
 
 // Defines parameters for a platform.
@@ -65,7 +65,7 @@ type PlatformConfig struct {
 	Channel        string
 	DisplayName    string
 	Envs           []corev1.EnvVar
-	Type           PlatformsType
+	Type           PlatformType
 }
 
 // Defines parameters for observatorium.
@@ -87,15 +87,15 @@ type DBaaSPlatformSpec struct {
 
 // Defines the observed state of a DBaaSPlatform object.
 type DBaaSPlatformStatus struct {
-	Conditions      []metav1.Condition `json:"conditions,omitempty"`
-	PlatformsStatus []PlatformStatus   `json:"platformsStatus"`
+	Conditions     []metav1.Condition `json:"conditions,omitempty"`
+	PlatformStatus []PlatformStatus   `json:"platformStatus"`
 }
 
 // Defines the status of a DBaaSPlatform object.
 type PlatformStatus struct {
-	PlatformName   PlatformsName         `json:"platformName"`
-	PlatformStatus PlatformsInstlnStatus `json:"platformStatus"`
-	LastMessage    string                `json:"lastMessage,omitempty"`
+	PlatformName   PlatformName         `json:"platformName"`
+	PlatformStatus PlatformInstlnStatus `json:"platformStatus"`
+	LastMessage    string               `json:"lastMessage,omitempty"`
 }
 
 //+kubebuilder:storageversion

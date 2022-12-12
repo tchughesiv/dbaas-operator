@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   creationTimestamp: null
-  name: dbaas-operator-v1beta1-webhook-service
+  name: dbaas-operator-v1alpha1-webhook-service
 spec:
   ports:
   - port: 443
     targetPort: 9443
   selector:
-    dbaas-apiversion: v1beta1
+    dbaas-apiversion: v1alpha1
 status:
   loadBalancer: {}
