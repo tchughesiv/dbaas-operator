@@ -8,10 +8,9 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        url: "https://dbaas-operator-webhook-service/convert"
         service:
           namespace: system
-          name: webhook-service
+          name: controller-manager-service
           path: /convert
       conversionReviewVersions:
       - v1alpha1

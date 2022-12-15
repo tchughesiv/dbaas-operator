@@ -259,20 +259,20 @@ sdk-manifests: manifests generate fmt kustomize sdk ## Generate bundle manifests
 .PHONY: bundle
 bundle: sdk-manifests yq ## Generate bundle manifests, then validate generated files.
 	$(KUSTOMIZE) build config/manifests | $(SDK) generate bundle -q --overwrite --manifests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasconnections.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinstances.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinventories.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaaspolicies.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasconnections.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinstances.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinventories.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaaspolicies.yaml
 #	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasproviders.yaml
 	$(SDK) bundle validate ./bundle
 
 .PHONY: bundle-w-digests
 bundle-w-digests: sdk-manifests yq ## Generate bundle manifests w/ image digests, then validate generated files.
 	$(KUSTOMIZE) build config/manifests | $(SDK) generate bundle -q --overwrite --manifests --use-image-digests --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasconnections.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinstances.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinventories.yaml
-	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaaspolicies.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasconnections.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinstances.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasinventories.yaml
+#	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaaspolicies.yaml
 #	$(YQ) 'del(.spec.conversion.webhook.clientConfig.service)' -i bundle/manifests/dbaas.redhat.com_dbaasproviders.yaml
 	$(SDK) bundle validate ./bundle
 

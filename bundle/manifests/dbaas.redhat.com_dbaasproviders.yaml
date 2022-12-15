@@ -11,8 +11,8 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: dbaas-operator-webhook-service
-          namespace: dbaas-operator-system
+          name: dbaas-operator-controller-manager-service
+          namespace: openshift-dbaas-operator
           path: /convert
       conversionReviewVersions:
       - v1alpha1

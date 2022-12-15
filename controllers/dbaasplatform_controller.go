@@ -119,16 +119,19 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}, crd); err != nil {
 		logger.Error(err, "Error getting crd")
 	}
-	convObj := crd.Spec.Conversion.DeepCopy()
-	if convObj != nil &&
-		convObj.Webhook != nil &&
-		convObj.Webhook.ClientConfig != nil &&
-		convObj.Webhook.ClientConfig.Service != nil &&
-		convObj.Webhook.ClientConfig.Service.Namespace != r.InstallNamespace {
-		convObj.Webhook.ClientConfig.Service.Namespace = r.InstallNamespace
-		crd.Spec.Conversion = convObj
-		if err := r.Update(ctx, crd); err != nil {
-			logger.Error(err, "Error updating crd")
+	if crd.Spec.Conversion != nil {
+		convObj := crd.Spec.Conversion.DeepCopy()
+		if convObj.Webhook != nil &&
+			convObj.Webhook.ClientConfig != nil &&
+			convObj.Webhook.ClientConfig.Service != nil &&
+			convObj.Webhook.ClientConfig.Service.Namespace != r.InstallNamespace {
+
+			convObj.Webhook.ClientConfig.Service.Namespace = r.InstallNamespace
+			crd.Spec.Conversion = convObj
+			if err := r.Update(ctx, crd); err != nil {
+				logger.Error(err, "Error updating crd")
+			}
+
 		}
 	}
 
