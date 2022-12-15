@@ -6,6 +6,14 @@ metadata:
   creationTimestamp: null
   name: dbaasinventories.dbaas.redhat.com
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        url: https://dbaas-operator-webhook-service/convert
+      conversionReviewVersions:
+        - v1alpha1
+        - v1beta1
   group: dbaas.redhat.com
   names:
     kind: DBaaSInventory
