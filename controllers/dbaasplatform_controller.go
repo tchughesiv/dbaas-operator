@@ -28,10 +28,11 @@ import (
 	"github.com/RHEcosystemAppEng/dbaas-operator/controllers/reconcilers/consoleplugin"
 	"github.com/RHEcosystemAppEng/dbaas-operator/controllers/reconcilers/providersinstallation"
 	"github.com/RHEcosystemAppEng/dbaas-operator/controllers/reconcilers/quickstartinstallation"
-	"golang.org/x/mod/semver"
-	apimeta "k8s.io/apimachinery/pkg/api/meta"
-
 	"github.com/go-logr/logr"
+	"golang.org/x/mod/semver"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/types"
 
 	metrics "github.com/RHEcosystemAppEng/dbaas-operator/controllers/metrics"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -88,6 +89,8 @@ type DBaaSPlatformReconciler struct {
 //+kubebuilder:rbac:groups=config.openshift.io,resources=clusterversions,verbs=get;list;watch
 //+kubebuilder:rbac:groups=config.openshift.io,resources=infrastructures,verbs=get;list;watch
 //+kubebuilder:rbac:groups=config.openshift.io,resources=consoles,verbs=get;list;watch
+//+kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;watch
+//+kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,resourceNames=dbaasproviders.dbaas.redhat.com,verbs=update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -108,6 +111,25 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		// error fetching DBaaSPlatform instance, requeue and try again
 		logger.Error(err, "Error in Get of DBaaSPlatform CR")
 		return ctrl.Result{}, err
+	}
+
+	crd := &apiextensionsv1.CustomResourceDefinition{}
+	if err := r.Get(ctx, types.NamespacedName{
+		Name: "dbaasproviders.dbaas.redhat.com",
+	}, crd); err != nil {
+		logger.Error(err, "Error getting crd")
+	}
+	convObj := crd.Spec.Conversion.DeepCopy()
+	if convObj != nil &&
+		convObj.Webhook != nil &&
+		convObj.Webhook.ClientConfig != nil &&
+		convObj.Webhook.ClientConfig.Service != nil &&
+		convObj.Webhook.ClientConfig.Service.Namespace != r.InstallNamespace {
+		convObj.Webhook.ClientConfig.Service.Namespace = r.InstallNamespace
+		crd.Spec.Conversion = convObj
+		if err := r.Update(ctx, crd); err != nil {
+			logger.Error(err, "Error updating crd")
+		}
 	}
 
 	var finished = true
