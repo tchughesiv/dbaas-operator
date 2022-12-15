@@ -25,12 +25,12 @@ patchesStrategicMerge:
 
 # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
-#- patches/cainjection_in_dbaasconnections.yaml
-#- patches/cainjection_in_dbaasinventories.yaml
-#- patches/cainjection_in_dbaasproviders.yaml
+- patches/cainjection_in_dbaasconnections.yaml
+- patches/cainjection_in_dbaasinventories.yaml
+- patches/cainjection_in_dbaasproviders.yaml
+- patches/cainjection_in_dbaasinstances.yaml
+- patches/cainjection_in_dbaaspolicies.yaml
 #- patches/cainjection_in_dbaasplatforms.yaml
-#- patches/cainjection_in_dbaasinstances.yaml
-#- patches/cainjection_in_dbaaspolicies.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.

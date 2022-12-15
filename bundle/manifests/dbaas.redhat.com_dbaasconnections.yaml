@@ -2,6 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    cert-manager.io/inject-ca-from: openshift-dbaas-operator/dbaas-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.4.1
     service.binding/configuration: path={.status.connectionInfoRef.name},objectType=ConfigMap
     service.binding/credentials: path={.status.credentialsRef.name},objectType=Secret
