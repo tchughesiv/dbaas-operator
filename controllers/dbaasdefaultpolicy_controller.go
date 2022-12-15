@@ -45,12 +45,10 @@ type DBaaSDefaultPolicyReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *DBaaSDefaultPolicyReconciler) Reconcile(ctx context.Context, _ ctrl.Request) (ctrl.Result, error) {
-	/*
-		// Creates a new managed install CR if it is not available
-		if err := r.createPlatformCR(context.Background()); err != nil {
-			return ctrl.Result{Requeue: true}, err
-		}
-	*/
+	// Creates a new managed install CR if it is not available
+	if err := r.createPlatformCR(context.Background()); err != nil {
+		return ctrl.Result{Requeue: true}, err
+	}
 
 	// on operator startup, create default policy if none exists
 	return r.createDefaultPolicy(ctx)

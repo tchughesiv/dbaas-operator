@@ -13,7 +13,7 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: dbaas-operator-controller-manager-service
+          name: dbaas-operator-webhook-service
           namespace: dbaas-operator-system
           path: /convert
       conversionReviewVersions:
