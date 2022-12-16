@@ -119,19 +119,27 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}, crd); err != nil {
 		logger.Error(err, "Error getting crd")
 	}
+	crdOld := crd.DeepCopy()
 	if crd.Spec.Conversion != nil {
-		convObj := crd.Spec.Conversion.DeepCopy()
-		if convObj.Webhook != nil &&
-			convObj.Webhook.ClientConfig != nil &&
-			convObj.Webhook.ClientConfig.Service != nil &&
-			convObj.Webhook.ClientConfig.Service.Namespace != r.InstallNamespace {
-
-			convObj.Webhook.ClientConfig.Service.Namespace = r.InstallNamespace
-			crd.Spec.Conversion = convObj
-			if err := r.Update(ctx, crd); err != nil {
-				logger.Error(err, "Error updating crd")
-			}
-
+		if crd.Spec.Conversion.Webhook != nil &&
+			crd.Spec.Conversion.Webhook.ClientConfig != nil &&
+			crd.Spec.Conversion.Webhook.ClientConfig.Service != nil &&
+			crd.Spec.Conversion.Webhook.ClientConfig.Service.Namespace != r.InstallNamespace {
+			crd.Spec.Conversion.Webhook.ClientConfig.Service.Namespace = r.InstallNamespace
+		}
+	}
+	certInjectKey := "cert-manager.io/inject-ca-from"
+	certInjectValue := r.InstallNamespace + "/dbaas-operator-serving-cert"
+	if crd.Annotations != nil {
+		if crd.Annotations[certInjectKey] != certInjectValue {
+			crd.Annotations[certInjectKey] = certInjectValue
+		}
+	} else {
+		crd.Annotations = map[string]string{certInjectKey: certInjectValue}
+	}
+	if !reflect.DeepEqual(crdOld, crd) {
+		if err := r.Update(ctx, crd); err != nil {
+			logger.Error(err, "Error updating crd")
 		}
 	}
 

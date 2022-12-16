@@ -3,7 +3,7 @@ resources:
 - service.yaml
 
 patchesStrategicMerge:
-- validatingConfig.yaml
+- validatingConfig.overlay
 
 configurations:
 - kustomizeconfig.yaml
