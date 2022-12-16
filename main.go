@@ -47,7 +47,6 @@ import (
 
 	operatorframework "github.com/operator-framework/api/pkg/operators/v1alpha1"
 	msoapi "github.com/rhobs/observability-operator/pkg/apis/monitoring/v1alpha1"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1beta1"
@@ -80,7 +79,6 @@ func init() {
 	utilruntime.Must(rbacv1.AddToScheme(scheme))
 	utilruntime.Must(consolev1.AddToScheme(scheme))
 	utilruntime.Must(msoapi.AddToScheme(scheme))
-	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 
 	//+kubebuilder:scaffold:scheme
 }

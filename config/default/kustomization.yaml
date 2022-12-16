@@ -1,5 +1,5 @@
 # Adds namespace to all resources.
-namespace: openshift-dbaas-operator
+namespace: redhat-dbaas-operator
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named
@@ -67,11 +67,11 @@ vars:
   objref:
     kind: Service
     version: v1
-    name: controller-manager-service
+    name: webhook-service
   fieldref:
     fieldpath: metadata.namespace
 - name: SERVICE_NAME
   objref:
     kind: Service
     version: v1
-    name: controller-manager-service
+    name: webhook-service
