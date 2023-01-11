@@ -6,6 +6,17 @@ metadata:
   creationTimestamp: null
   name: dbaasplatforms.dbaas.redhat.com
 spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: dbaas-operator-webhook-service
+          namespace: openshift-dbaas-operator
+          path: /convert
+      conversionReviewVersions:
+      - v1alpha1
+      - v1beta1
   group: dbaas.redhat.com
   names:
     kind: DBaaSPlatform

@@ -4,13 +4,14 @@ on:
   push:
     branches:
     - main
+    - revertPlatformMove
 
 env:
-  IMAGE_TAG_BASE: quay.io/ecosystem-appeng/dbaas-operator-dev
+  IMAGE_TAG_BASE: quay.io/${{ github.repository }}-dev
 
 jobs:
   push:
-    if: github.repository == 'RHEcosystemAppEng/dbaas-operator'
+    if: github.repository == 'tchughesiv/dbaas-operator'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code

@@ -129,6 +129,9 @@ var _ = BeforeSuite(func() {
 	err = (&DBaaSInventory{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = (&DBaaSPlatform{}).SetupWebhookWithManager(mgr)
+	Expect(err).NotTo(HaveOccurred())
+
 	err = (&DBaaSPolicy{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 

@@ -137,6 +137,9 @@ var _ = BeforeSuite(func() {
 	err = (&v1beta1.DBaaSInventory{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = (&v1beta1.DBaaSPlatform{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).NotTo(HaveOccurred())
+
 	err = (&v1beta1.DBaaSPolicy{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
 

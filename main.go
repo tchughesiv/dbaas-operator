@@ -180,6 +180,10 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSInventory")
 			os.Exit(1)
 		}
+		if err = (&v1beta1.DBaaSPlatform{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSPlatform")
+			os.Exit(1)
+		}
 		if err = (&v1beta1.DBaaSPolicy{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "DBaaSPolicy")
 			os.Exit(1)
