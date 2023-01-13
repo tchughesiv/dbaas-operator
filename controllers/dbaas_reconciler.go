@@ -38,7 +38,8 @@ var (
 type DBaaSReconciler struct {
 	client.Client
 	*runtime.Scheme
-	InstallNamespace string
+	InstallNamespace    string
+	operatorNameVersion string
 }
 
 func (r *DBaaSReconciler) getDBaaSProvider(ctx context.Context, providerName string) (*v1beta1.DBaaSProvider, error) {
