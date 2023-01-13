@@ -801,11 +801,10 @@ spec:
     - dbaasconnections.dbaas.redhat.com
     - dbaasinstances.dbaas.redhat.com
     - dbaasinventories.dbaas.redhat.com
-    - dbaasplatforms.dbaas.redhat.com
     - dbaaspolicies.dbaas.redhat.com
     - dbaasproviders.dbaas.redhat.com
     deploymentName: dbaas-operator-controller-manager
-    generateName: cdbaasconnectionsdbaasinstancesdbaasinventoriesdbaasplatformsdbaaspoliciesdbaasproviders.kb.io
+    generateName: cdbaasconnectionsdbaasinstancesdbaasinventoriesdbaaspoliciesdbaasproviders.kb.io
     sideEffects: None
     targetPort: 9443
     type: ConversionWebhook

@@ -12,12 +12,19 @@ import (
 
 var _ = Describe("DBaaSPlatform controller", func() {
 	Describe("trigger reconcile", func() {
+		By("creating platform cr with syncPeriod")
+		syncPeriod := 180
 		cr := &dbaasv1beta1.DBaaSPlatform{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "dbaas-platform",
 				Namespace: testNamespace,
+				Labels:    map[string]string{"managed-by": "dbaas-operator"},
+			},
+			Spec: dbaasv1beta1.DBaaSPlatformSpec{
+				SyncPeriod: &syncPeriod,
 			},
 		}
+		BeforeEach(assertResourceCreationIfNotExists(cr))
 		It("should succeed", func() {
 			By("checking the DBaaS resource")
 			objectKey := client.ObjectKeyFromObject(cr)
