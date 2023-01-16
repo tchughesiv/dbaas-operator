@@ -7,7 +7,7 @@ on:
     - revertPlatformMove
 
 env:
-  IMAGE_TAG_BASE: quay.io/${{ github.repository }}-dev
+  IMAGE_TAG_BASE: quay.io/tchughesiv/dbaas-operator-dev
 
 jobs:
   push:
