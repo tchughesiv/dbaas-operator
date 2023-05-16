@@ -53,15 +53,6 @@ const (
 	dbaasDynamicPluginName        = "dbaas-dynamic-plugin"
 	dbaasDynamicPluginDisplayName = "OpenShift Database as a Service Dynamic Plugin"
 
-	// RDS_PROVIDER
-	rdsProviderCSV         = "CSV_VERSION_RDS_PROVIDER"
-	rdsProviderCatalogImg  = "RELATED_IMAGE_RDS_PROVIDER_CATALOG"
-	rdsProviderName        = "rds-provider"
-	rdsProviderDisplayName = "RHODA Provider Operator for Amazon RDS"
-	rdsProviderDeployment  = "rds-dbaas-operator-controller-manager"
-	rdsProviderPkg         = "rds-dbaas-operator"
-	rdsProviderChannel     = "alpha"
-
 	//ObservabilityName platform name for observability
 	ObservabilityName = "observability"
 	//ObservabilityDisplayName constants for observability
@@ -110,16 +101,6 @@ var InstallationPlatforms = map[dbaasv1beta1.PlatformName]dbaasv1beta1.PlatformC
 	dbaasv1beta1.DBaaSQuickStartInstallation: {
 		Type: dbaasv1beta1.TypeQuickStart,
 		CSV:  DBaaSQuickStartVersion,
-	},
-	dbaasv1beta1.RDSProviderInstallation: {
-		Name:           rdsProviderName,
-		CSV:            fetchEnvValue(rdsProviderCSV),
-		DeploymentName: rdsProviderDeployment,
-		Image:          fetchEnvValue(rdsProviderCatalogImg),
-		PackageName:    rdsProviderPkg,
-		Channel:        rdsProviderChannel,
-		DisplayName:    rdsProviderDisplayName,
-		Type:           dbaasv1beta1.TypeOperator,
 	},
 	dbaasv1beta1.ObservabilityInstallation: {
 		Name:        ObservabilityName,
